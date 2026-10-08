@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const TABS = [
-  { href: '/', label: 'Your list' },
+  { href: '/board', label: 'Your list' },
   { href: '/shoot-days', label: 'Shoot days' },
   { href: '/videos', label: 'All videos' },
 ]
@@ -13,7 +13,7 @@ const TABS = [
 export function Tabs() {
   const path = usePathname()
   const active = (href: string) =>
-    href === '/' ? path === '/' || path.startsWith('/videos/') : path === href || path.startsWith(href + '/')
+    href === '/board' ? path === '/board' || path.startsWith('/videos/') : path === href || path.startsWith(href + '/')
   return (
     <nav aria-label="Sections" className="flex justify-center gap-1.5 sm:gap-2">
       {TABS.map((t) => {

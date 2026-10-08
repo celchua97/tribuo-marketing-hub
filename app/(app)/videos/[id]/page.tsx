@@ -55,7 +55,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
       <PageBand title={video.title} />
       <main className="mx-auto max-w-2xl space-y-5 px-4 py-6">
       <div className="space-y-4">
-        <Link href="/" className="inline-block text-sm font-bold text-blue">
+        <Link href="/board" className="inline-block text-sm font-bold text-blue">
           ‹ Back
         </Link>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

@@ -2,8 +2,11 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Tribuo Content',
-  description: 'Briefs, shoots, edits and approvals for the Tribuo content team',
+  title: 'Tribuo Hub',
+  description: 'The Tribuo marketing team’s tools in one place',
+  applicationName: 'Tribuo Hub',
+  appleWebApp: { capable: true, title: 'Tribuo Hub', statusBarStyle: 'default' },
+  icons: { apple: '/apple-touch-icon.png' },
 }
 
 export const viewport: Viewport = {
@@ -23,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <div className="lg:pl-72">{children}</div>
+      </body>
     </html>
   )
 }

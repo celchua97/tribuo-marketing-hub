@@ -19,6 +19,12 @@ Built with Next.js, Supabase (Postgres) and Tailwind, and deployed to Vercel. Vi
 | 5 | WhatsApp nudge buttons, "All videos" list | Done |
 | + | Follow up section: who is overdue or quiet, with a nudge ready to copy | Done |
 
+## The Hub
+
+The site is one app with a menu that slides in from the left: swipe right (start anywhere in the left part of the screen) or tap the menu button. On a laptop it stays open as a sidebar. It lists the **Content workflow board** (Your list, Shoot days, All videos), the **Idea Bank** (Submit, Your submissions) and, for the Head of Marketing, **Admin**. The home page (`/`) shows each tool with a one-line summary of what needs you. People can add it to their phone's home screen and it opens full screen like an app.
+
+Pages: `/` Hub home, `/board` your list, `/shoot-days`, `/videos`, `/ideas`, `/admin`, `/settings`. The "tribuo." logo is `public/tribuo-logo.svg` (Tribuo blue).
+
 ## Idea Bank
 
 A second tool on the same website, at `/ideas`. It has its own link you can share.

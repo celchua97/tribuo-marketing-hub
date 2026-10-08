@@ -34,6 +34,6 @@ export async function requireMe() {
 
 export async function requireLead() {
   const ctx = await requireMe()
-  if (ctx.me.role !== 'lead') redirect('/')
+  if (ctx.me.role !== 'lead') redirect('/board')
   return ctx
 }

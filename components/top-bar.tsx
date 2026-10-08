@@ -1,22 +1,26 @@
 import Link from 'next/link'
 import { Logo } from './logo'
 import { Tabs } from './tabs'
+import { HubMenu } from './hub/menu'
 
 // Slim off-white bar with the logo on the left. `children` sits on the right.
 export function TopBar({
   children,
   label,
   width = 'max-w-2xl',
+  menu,
 }: {
   children?: React.ReactNode
   label?: string
   width?: string
+  menu?: { isAdmin?: boolean; who?: string }
 }) {
   return (
     <header className="bg-canvas">
       <div className={`mx-auto flex ${width} flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3`}>
         <div className="flex items-center gap-3">
-          <Link href="/" aria-label="Home">
+          <HubMenu {...menu} />
+          <Link href="/" aria-label="Hub home">
             <Logo />
           </Link>
           {label && (

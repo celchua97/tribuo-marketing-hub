@@ -10,15 +10,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { me } = await requireMe()
   return (
     <div className="min-h-dvh pb-16">
-      <TopBar>
+      <TopBar menu={{ isAdmin: me.role === 'lead', who: `${me.full_name}, ${ROLE_LABEL[me.role]}` }}>
         <span className={`size-3 shrink-0 rounded-full ${ROLE_COLOR[me.role].dot}`} />
         <span className="flex flex-col pr-1 leading-tight">
           <span className="whitespace-nowrap font-bold text-ink">{me.full_name}</span>
           <span className="label-caps whitespace-nowrap text-[10px] text-grey">{ROLE_LABEL[me.role]}</span>
         </span>
-        <Link href="/ideas" className="rounded-full px-2.5 py-2 hover:bg-white">
-          Idea Bank
-        </Link>
         {me.role === 'lead' && <AdminButton />}
         <Link href="/who" className="rounded-full px-2.5 py-2 hover:bg-white">
           Switch

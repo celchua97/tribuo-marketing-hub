@@ -57,7 +57,7 @@ export async function deleteVideo(_prev: ActionState, formData: FormData): Promi
   })
   if (error) return { error: friendlyError(error.message) }
   revalidatePath('/', 'layout')
-  redirect('/')
+  redirect('/board')
 }
 
 // ---------------------------------------------------------------------------

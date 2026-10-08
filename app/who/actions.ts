@@ -24,7 +24,7 @@ export async function pickPerson(_prev: ActionState, formData: FormData): Promis
     .maybeSingle<Pick<Profile, 'id'>>()
   if (!data) return { error: 'That person isn’t on the team any more.' }
   ;(await cookies()).set(PERSON_COOKIE, data.id, PERSON_COOKIE_OPTIONS)
-  redirect('/')
+  redirect('/board')
 }
 
 // First time: a name and a colour. The colour is the role.
@@ -34,5 +34,5 @@ export async function joinTeam(_prev: ActionState, formData: FormData): Promise<
   const { data, error } = await db().rpc('join_team', { p_name: text(formData, 'name'), p_role: role })
   if (error) return { error: friendlyError(error.message) }
   ;(await cookies()).set(PERSON_COOKIE, data as string, PERSON_COOKIE_OPTIONS)
-  redirect('/')
+  redirect('/board')
 }

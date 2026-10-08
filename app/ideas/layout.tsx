@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { getMe } from '@/lib/data'
 import { db } from '@/lib/supabase/admin'
 import { getIdeaPerson, loadDepartments } from '@/lib/ideas'
@@ -28,7 +27,7 @@ export default async function IdeasLayout({ children }: { children: React.ReactN
     ])
     return (
       <div className="min-h-dvh pb-16">
-        <TopBar label="Idea Bank" width={WIDTH}>
+        <TopBar label="Idea Bank" width={WIDTH} menu={{ isAdmin }}>
           {isAdmin && <AdminButton />}
         </TopBar>
         <PageBand title="Idea Bank" intro="Pop in your name and department once, and you're in. No password needed." nav={false} />
@@ -41,15 +40,16 @@ export default async function IdeasLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-dvh pb-16">
-      <TopBar label="Idea Bank" width={WIDTH}>
+      <TopBar
+        label="Idea Bank"
+        width={WIDTH}
+        menu={{ isAdmin, who: `${person.name}${person.department ? `, ${person.department.name}` : ''}` }}
+      >
         {person.department && <span className="tag tag-cream mr-1">{person.department.name}</span>}
         <span className="mr-1 font-bold text-ink">{person.name}</span>
         <form action={switchIdeaPerson}>
           <button className="rounded-full px-2.5 py-2 hover:bg-white">Switch</button>
         </form>
-        <Link href="/" className="rounded-full px-2.5 py-2 hover:bg-white">
-          Video board
-        </Link>
         {isAdmin && <AdminButton />}
       </TopBar>
       <PageBand

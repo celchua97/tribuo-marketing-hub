@@ -8,7 +8,7 @@ export default function NotFound() {
       <main className="mx-auto max-w-2xl px-4 py-6">
         <div className="card space-y-3 text-center">
           <p className="font-bold">That video doesn&rsquo;t exist any more.</p>
-          <Link href="/" className="btn-primary">
+          <Link href="/board" className="btn-primary">
             Back to your list
           </Link>
         </div>

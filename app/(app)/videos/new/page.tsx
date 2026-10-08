@@ -11,7 +11,7 @@ export default async function NewVideoPage() {
     <>
       <PageBand title="New video" />
       <main className="mx-auto max-w-2xl space-y-4 px-4 py-6">
-        <Link href="/" className="text-sm font-bold text-blue">
+        <Link href="/board" className="text-sm font-bold text-blue">
           ‹ Back
         </Link>
         <div className="card">
