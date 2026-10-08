@@ -21,7 +21,7 @@ export function RequestChangesForm({ videoId, onCancel }: { videoId: string; onC
     <ActionForm action={requestChanges} className="space-y-3">
       <input type="hidden" name="video_id" value={videoId} />
       <input type="hidden" name="comments" value={JSON.stringify(filled)} />
-      <p className="font-semibold">What needs changing?</p>
+      <p className="label-caps text-xs text-grey">What needs changing?</p>
       {lines.map((line, i) => (
         <div key={i} className="flex gap-2">
           <input
@@ -55,10 +55,10 @@ export function RequestChangesForm({ videoId, onCancel }: { videoId: string; onC
       >
         + Add another comment
       </button>
-      <SubmitButton className="btn-coral" pendingText="Sending…" disabled={filled.length === 0}>
+      <SubmitButton className="btn-primary" pendingText="Sending…" disabled={filled.length === 0}>
         Send {filled.length || ''} comment{filled.length === 1 ? '' : 's'} to the editor
       </SubmitButton>
-      <button type="button" onClick={onCancel} className="w-full py-2 text-sm text-ink/60">
+      <button type="button" onClick={onCancel} className="w-full py-2 text-sm text-grey">
         Cancel
       </button>
     </ActionForm>

@@ -10,14 +10,16 @@ export const STATUS_LABEL: Record<VideoStatus, string> = {
   posted: 'Posted',
 }
 
+// Blue: with the team or done. Yellow: waiting on Head of Marketing.
+// Salmon: needs fixes. Cream: not started.
 export const STATUS_PILL: Record<VideoStatus, string> = {
-  draft: 'bg-sand text-ink',
-  to_shoot: 'bg-blue/10 text-blue',
-  to_edit: 'bg-blue/10 text-blue',
-  in_review: 'bg-coral/20 text-ink',
-  changes_requested: 'bg-coral/20 text-ink',
-  approved: 'bg-ink/5 text-ink',
-  posted: 'bg-ink text-white',
+  draft: 'tag-cream',
+  to_shoot: 'tag-blue',
+  to_edit: 'tag-blue',
+  in_review: 'tag-yellow',
+  changes_requested: 'tag-salmon',
+  approved: 'tag-yellow',
+  posted: 'tag-blue',
 }
 
 export const MARKET_FLAG: Record<Market, string> = { MY: '🇲🇾', KH: '🇰🇭' }

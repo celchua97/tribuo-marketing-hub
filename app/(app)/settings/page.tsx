@@ -3,6 +3,7 @@ import { requireLead } from '@/lib/data'
 import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
 import type { Profile } from '@/lib/types'
 import { ActionForm, SubmitButton } from '@/components/action-form'
+import { PageBand } from '@/components/top-bar'
 import { saveSettings, updatePerson } from '../actions'
 
 type Settings = { edit_due_days: number; approval_due_days: number; revision_due_days: number }
@@ -21,16 +22,15 @@ export default async function SettingsPage() {
   ]
 
   return (
-    <main className="space-y-6">
-      <div>
-        <Link href="/" className="text-sm text-ink/60">
-          ‹ Back
-        </Link>
-        <h1 className="mt-2 text-2xl font-bold">Settings</h1>
-      </div>
+    <>
+      <PageBand title="Settings" />
+      <main className="mx-auto max-w-2xl space-y-6 px-4 py-6">
+      <Link href="/" className="text-sm font-bold text-blue">
+        ‹ Back
+      </Link>
 
       <section className="card space-y-4">
-        <h2 className="font-semibold">Due dates</h2>
+        <h2 className="label-caps text-xs text-grey">Due dates</h2>
         <ActionForm action={saveSettings} className="space-y-4">
           {dueFields.map((f) => (
             <label key={f.name} className="flex items-center gap-3">
@@ -44,8 +44,8 @@ export default async function SettingsPage() {
                 className="field w-20 text-center"
               />
               <span>
-                <span className="font-medium">{f.label}</span>{' '}
-                <span className="text-ink/60">{f.hint}</span>
+                <span className="font-bold">{f.label}</span>{' '}
+                <span className="text-grey">{f.hint}</span>
               </span>
             </label>
           ))}
@@ -54,18 +54,18 @@ export default async function SettingsPage() {
       </section>
 
       <section className="card space-y-4">
-        <h2 className="font-semibold">Team</h2>
-        <p className="text-sm text-ink/60">
+        <h2 className="label-caps text-xs text-grey">Team</h2>
+        <p className="text-sm text-grey">
           People add themselves from the &ldquo;Who are you?&rdquo; screen. Set a market if someone only
           covers one, for example a Cambodia videographer.
         </p>
-        <ul className="divide-y divide-ink/5">
+        <ul className="divide-y divide-beige">
           {(people ?? []).map((p) => (
             <li key={p.id} className="space-y-2 py-3">
-              <p className="flex items-center gap-2 font-medium">
+              <p className="flex items-center gap-2 font-bold">
                 <span className={`size-3 rounded-full ${ROLE_COLOR[p.role].dot}`} />
                 {p.full_name}
-                <span className="text-sm font-normal text-ink/50">{ROLE_LABEL[p.role]}</span>
+                <span className="text-sm font-normal text-grey">{ROLE_LABEL[p.role]}</span>
               </p>
               <div className="flex items-center gap-2">
                 <ActionForm action={updatePerson} className="flex flex-1 items-center gap-2">
@@ -84,7 +84,7 @@ export default async function SettingsPage() {
                     <input type="hidden" name="person_id" value={p.id} />
                     <input type="hidden" name="market" value={p.market ?? ''} />
                     <input type="hidden" name="active" value="false" />
-                    <SubmitButton className="chip shrink-0 text-red-700" pendingText="…">
+                    <SubmitButton className="chip shrink-0" pendingText="…">
                       Remove
                     </SubmitButton>
                   </ActionForm>
@@ -94,6 +94,7 @@ export default async function SettingsPage() {
           ))}
         </ul>
       </section>
-    </main>
+      </main>
+    </>
   )
 }

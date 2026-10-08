@@ -1,60 +1,108 @@
 @import 'tailwindcss';
 
+/* Tribuo brandbook colours. Nothing outside this list is used. */
 @theme {
-  --color-ink: #050505;
   --color-blue: #3750ab;
-  --color-coral: #fd947a;
-  --color-sand: #eee7c6;
-  --color-canvas: #f7f3eb;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --shadow-card: 0 1px 2px rgb(5 5 5 / 0.04), 0 4px 16px rgb(5 5 5 / 0.06);
+  --color-canvas: #f7f3eb; /* off-white */
+  --color-ink: #050505;
+  --color-yellow: #f9c339;
+  --color-coral: #fd947a; /* salmon */
+  --color-sand: #eee7c6; /* cream */
+  --color-sky: #6f9fc8;
+  --color-danger: #980000; /* error messages only */
+  --color-grey: #5e5a52; /* warm grey: helper text, dates */
+  --color-beige: #e7e0cc; /* dividers, borders, outlined buttons */
+
+  --font-sans: 'Arial Nova', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-title: 'Gill Sans Ultra Bold', 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+  --font-label: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
 }
 
 @layer base {
   html {
+    color-scheme: light;
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-canvas text-ink antialiased;
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 }
 
+/* Big titles */
+@utility title {
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-synthesis: none;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* Small uppercase labels and tags */
+@utility label-caps {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-synthesis: none;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 @utility card {
-    @apply rounded-2xl bg-white p-4 shadow-card;
+  @apply rounded-[18px] bg-white p-5;
 }
 
 @utility btn {
-    @apply inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl px-5 text-base font-semibold transition active:scale-[0.98] disabled:opacity-50;
+  @apply inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-base font-bold transition active:scale-[0.98] disabled:opacity-50;
 }
 
+/* Main action: black, white text */
 @utility btn-primary {
-    @apply btn bg-blue text-white;
+  @apply btn bg-ink text-white;
 }
 
-@utility btn-dark {
-    @apply btn bg-ink text-white;
-}
-
-@utility btn-coral {
-    @apply btn bg-coral text-ink;
-}
-
+/* Secondary: outlined */
 @utility btn-ghost {
-    @apply btn border border-ink/10 bg-white text-ink;
+  @apply btn border-2 border-beige bg-transparent text-ink;
 }
 
 @utility field {
-    @apply block w-full rounded-xl border border-ink/10 bg-white px-4 py-3 text-base outline-none focus:border-blue focus:ring-2 focus:ring-blue/20;
+  @apply block w-full rounded-xl border border-beige bg-canvas px-4 py-3 text-base outline-none focus:border-blue focus:ring-2 focus:ring-blue/20;
 }
 
 @utility label {
-    @apply mb-1.5 block text-sm font-medium text-ink/70;
+  @apply label-caps mb-2 block text-xs text-grey;
 }
 
 @utility chip {
-    @apply inline-flex min-h-11 items-center rounded-full border border-ink/10 bg-white px-4 text-sm font-medium transition active:scale-[0.97];
+  @apply inline-flex min-h-11 items-center rounded-full border-2 border-beige bg-transparent px-4 text-sm font-bold transition active:scale-[0.97];
 }
 
 @utility chip-on {
-    @apply border-blue bg-blue text-white;
+  @apply border-blue bg-blue text-white;
+}
+
+/* Small status and info tags */
+@utility tag {
+  @apply label-caps inline-flex items-center rounded-full px-3 py-1.5 text-[11px] leading-none;
+}
+@utility tag-blue {
+  @apply bg-blue text-white;
+}
+@utility tag-yellow {
+  @apply bg-yellow text-ink;
+}
+@utility tag-salmon {
+  @apply bg-coral text-ink;
+}
+@utility tag-cream {
+  @apply bg-sand text-ink;
 }

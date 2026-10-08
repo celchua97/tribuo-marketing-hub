@@ -8,6 +8,7 @@ import { DueBadge, MarketFlag, StatusPill } from '@/components/badges'
 import { ActionForm, SubmitButton } from '@/components/action-form'
 import { PasteLinkField } from '@/components/paste-link-field'
 import { ReviewPanel } from '@/components/review-panel'
+import { PageBand } from '@/components/top-bar'
 import { markPosted, markShot, submitForReview } from '../../actions'
 
 export default async function VideoPage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,24 +44,25 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   const openComments = (comments ?? []).filter((c) => !c.resolved_at)
 
   return (
-    <main className="space-y-5">
-      <div>
-        <Link href="/" className="text-sm text-ink/60">
+    <>
+      <PageBand title={video.title} />
+      <main className="mx-auto max-w-2xl space-y-5 px-4 py-6">
+      <div className="space-y-4">
+        <Link href="/" className="inline-block text-sm font-bold text-blue">
           ‹ Back
         </Link>
-        <div className="mt-2 flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <MarketFlag market={video.market} />
           {video.episode_number && (
-            <span className="text-xs font-semibold text-ink/50">Ep {video.episode_number}</span>
+            <span className="label-caps text-xs text-grey">Ep {video.episode_number}</span>
           )}
-          {video.pillar && <span className="text-xs text-ink/50">{video.pillar.name}</span>}
+          {video.pillar && <span className="label-caps text-xs text-grey">{video.pillar.name}</span>}
         </div>
-        <h1 className="mt-1 text-2xl leading-tight font-bold">{video.title}</h1>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <StatusPill status={video.status} />
           <DueBadge dueOn={video.due_on} timeZone={tz} />
           {video.assignee && (
-            <span className="text-sm text-ink/60">
+            <span className="text-sm text-grey">
               {video.assignee_id === me.id ? 'With you' : `With ${video.assignee.full_name}`}
             </span>
           )}
@@ -71,14 +73,14 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
       {openComments.length > 0 && (
         <section className="card">
-          <h2 className="mb-3 font-semibold">
-            Changes to make <span className="text-ink/50">({openComments.length})</span>
+          <h2 className="label-caps mb-3 text-xs text-grey">
+            Changes to make <span className="text-grey">({openComments.length})</span>
           </h2>
           <ul className="space-y-2">
             {openComments.map((c) => (
               <li key={c.id} className="flex gap-3 rounded-xl bg-canvas px-3 py-3">
                 {c.timecode && (
-                  <span className="shrink-0 self-start rounded-md bg-ink px-2 py-0.5 font-mono text-sm text-white">
+                  <span className="shrink-0 self-start tag tag-blue shrink-0 self-start">
                     {c.timecode}
                   </span>
                 )}
@@ -102,9 +104,9 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
       <section className="card space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="font-semibold">Brief</h2>
+          <h2 className="label-caps text-xs text-grey">Brief</h2>
           {me.role === 'lead' && (
-            <Link href={`/videos/${id}/edit`} className="text-sm font-semibold text-blue">
+            <Link href={`/videos/${id}/edit`} className="text-sm font-bold text-blue">
               Edit
             </Link>
           )}
@@ -112,20 +114,20 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         {video.brief ? (
           <p className="whitespace-pre-wrap">{video.brief}</p>
         ) : (
-          <p className="text-ink/50">No brief yet.</p>
+          <p className="text-grey">No brief yet.</p>
         )}
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <dt className="text-ink/50">Target post date</dt>
+            <dt className="text-grey">Target post date</dt>
             <dd className="font-medium">
               {video.target_post_date ? formatDate(video.target_post_date) : 'Not set'}
             </dd>
           </div>
           {video.reference_link && (
             <div>
-              <dt className="text-ink/50">Reference</dt>
+              <dt className="text-grey">Reference</dt>
               <dd>
-                <a href={video.reference_link} target="_blank" rel="noreferrer" className="font-medium text-blue">
+                <a href={video.reference_link} target="_blank" rel="noreferrer" className="font-bold text-blue">
                   Open link ↗
                 </a>
               </dd>
@@ -136,14 +138,14 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
       {(submissions ?? []).length > 1 && (
         <section className="card">
-          <h2 className="mb-3 font-semibold">Earlier versions</h2>
+          <h2 className="label-caps mb-3 text-xs text-grey">Earlier versions</h2>
           <ul className="space-y-2 text-sm">
             {(submissions ?? []).slice(1).map((s) => (
               <li key={s.id}>
                 <a href={s.drive_link} target="_blank" rel="noreferrer" className="text-blue">
                   Version {s.round}
                 </a>{' '}
-                <span className="text-ink/50">· {formatDateTime(s.submitted_at, tz)}</span>
+                <span className="text-grey">· {formatDateTime(s.submitted_at, tz)}</span>
               </li>
             ))}
           </ul>
@@ -151,20 +153,21 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
       )}
 
       <section className="card">
-        <h2 className="mb-3 font-semibold">History</h2>
+        <h2 className="label-caps mb-3 text-xs text-grey">History</h2>
         <ol className="space-y-2 text-sm">
           {(events ?? []).map((e) => (
             <li key={e.id} className="flex justify-between gap-3">
               <span>
-                <strong className="font-medium">{e.actor?.full_name ?? 'Someone'}</strong>{' '}
+                <strong className="font-bold">{e.actor?.full_name ?? 'Someone'}</strong>{' '}
                 {eventText(e.kind, e.to_status, e.payload)}
               </span>
-              <span className="shrink-0 text-ink/50">{formatDateTime(e.created_at, tz)}</span>
+              <span className="shrink-0 text-grey">{formatDateTime(e.created_at, tz)}</span>
             </li>
           ))}
         </ol>
       </section>
-    </main>
+      </main>
+    </>
   )
 }
 
@@ -175,7 +178,7 @@ function ActionPanel({ video, me }: { video: VideoWithNames; me: Profile }) {
   switch (video.status) {
     case 'draft':
       return isLead ? (
-        <Link href={`/videos/${video.id}/edit`} className="btn-dark">
+        <Link href={`/videos/${video.id}/edit`} className="btn-primary">
           Write the brief
         </Link>
       ) : null
@@ -216,7 +219,7 @@ function ActionPanel({ video, me }: { video: VideoWithNames; me: Profile }) {
           {hidden}
           <label className="label">Live post link (optional)</label>
           <PasteLinkField name="posted_link" placeholder="https://instagram.com/…" />
-          <SubmitButton className="btn-dark" pendingText="Saving…">
+          <SubmitButton className="btn-primary" pendingText="Saving…">
             Posted
           </SubmitButton>
         </ActionForm>

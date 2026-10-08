@@ -28,11 +28,11 @@ export function PasteLinkField({ name, placeholder }: { name: string; placeholde
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
-        <button type="button" onClick={paste} className="chip shrink-0 bg-sand">
+        <button type="button" onClick={paste} className="chip shrink-0 !border-sand bg-sand">
           Paste
         </button>
       </div>
-      {hint && <p className="mt-1 text-xs text-ink/60">{hint}</p>}
+      {hint && <p className="mt-1 text-xs text-grey">{hint}</p>}
     </div>
   )
 }

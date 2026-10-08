@@ -3,16 +3,12 @@ import { dueLabel, dueState } from '@/lib/dates'
 import type { Market, VideoStatus } from '@/lib/types'
 
 export function StatusPill({ status }: { status: VideoStatus }) {
-  return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_PILL[status]}`}>
-      {STATUS_LABEL[status]}
-    </span>
-  )
+  return <span className={`tag ${STATUS_PILL[status]}`}>{STATUS_LABEL[status]}</span>
 }
 
 export function MarketFlag({ market }: { market: Market }) {
   return (
-    <span title={MARKET_NAME[market]} className="inline-flex items-center gap-1 text-xs font-semibold text-ink/60">
+    <span title={MARKET_NAME[market]} className="label-caps inline-flex items-center gap-1.5 text-xs text-grey">
       <span className="text-base leading-none">{MARKET_FLAG[market]}</span>
       {market}
     </span>
@@ -22,16 +18,12 @@ export function MarketFlag({ market }: { market: Market }) {
 export function DueBadge({ dueOn, timeZone }: { dueOn: string | null; timeZone: string }) {
   if (!dueOn) return null
   const state = dueState(dueOn, timeZone)
-  const style =
-    state === 'overdue'
-      ? 'bg-red-600 text-white'
-      : state === 'today'
-        ? 'bg-coral text-ink'
-        : 'bg-ink/5 text-ink/70'
+  const label = dueLabel(dueOn, timeZone)
+  const style = state === 'overdue' ? 'tag-salmon' : state === 'today' ? 'tag-yellow' : 'tag-cream'
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${style}`}>
-      {state === 'overdue' ? 'Overdue · ' : ''}
-      {dueLabel(dueOn, timeZone)}
+    <span className={`tag ${style}`}>
+      {state === 'overdue' && !/overdue/.test(label) ? 'Overdue · ' : ''}
+      {label}
     </span>
   )
 }
