@@ -107,6 +107,10 @@ To add a person later (for example, a Cambodia videographer), have them add them
 2. Add three environment variables (see `.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_PUBLISHABLE_KEY`. The publishable key (starts `sb_publishable_`) is the public one and only switches on file attachments in the Idea Bank.
 3. Deploy, open the link, and set up your own name first so you claim Head of Marketing.
 
+### Which branch is live
+
+Vercel's Production Branch is `main`. Every push to `main` goes live; other branches get their own test links. If Vercel says "No deployments found for main", push once to `main` (or tap Create Deployment on the Deployments page, choose `main`) and set the Production Branch again.
+
 ### Local development
 
 ```bash
