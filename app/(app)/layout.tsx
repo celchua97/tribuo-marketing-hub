@@ -9,9 +9,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <header className="flex items-center justify-between gap-3 py-4">
         <Link href="/" className="min-w-0">
           <p className="text-xs font-semibold tracking-wide text-blue uppercase">Tribuo content</p>
-          <p className="truncate font-semibold">
-            {me.full_name} <span className="font-normal text-ink/50">· {ROLE_LABEL[me.role]}</span>
-          </p>
+          <p className="truncate font-semibold">{me.full_name}</p>
+          <p className="truncate text-xs text-ink/50">{ROLE_LABEL[me.role]}</p>
         </Link>
         <nav className="flex shrink-0 items-center gap-1 text-sm">
           {me.role === 'lead' && (

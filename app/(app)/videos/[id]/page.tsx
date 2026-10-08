@@ -78,7 +78,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
             {openComments.map((c) => (
               <li key={c.id} className="flex gap-3 rounded-xl bg-canvas px-3 py-3">
                 {c.timecode && (
-                  <span className="shrink-0 rounded-md bg-ink px-2 py-0.5 font-mono text-sm text-white">
+                  <span className="shrink-0 self-start rounded-md bg-ink px-2 py-0.5 font-mono text-sm text-white">
                     {c.timecode}
                   </span>
                 )}
