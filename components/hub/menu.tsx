@@ -22,6 +22,11 @@ const GROUPS: { title: string; blurb: string; items: Item[] }[] = [
     ],
   },
   {
+    title: 'To-do board',
+    blurb: 'To-dos by section. Drag them anywhere',
+    items: [{ href: '/todos', label: 'All sections', active: exact('/todos') }],
+  },
+  {
     title: 'Idea Bank',
     blurb: 'Ideas and feedback from the team',
     items: [

@@ -4,13 +4,14 @@ import { loadVideoFormData } from '@/lib/form-data'
 import { VideoForm } from '@/components/video-form'
 import { PageBand } from '@/components/top-bar'
 import { SlidesImport } from '@/components/videos/slides-import'
+import { loadTodos } from '@/lib/todos'
 
 // Reading a big deck from Google can take a few seconds
 export const maxDuration = 60
 
 export default async function NewVideoPage() {
   const { supabase } = await requireLead()
-  const formData = await loadVideoFormData(supabase)
+  const [formData, { sections }] = await Promise.all([loadVideoFormData(supabase), loadTodos(supabase)])
   return (
     <>
       <PageBand title="New video" />
@@ -18,7 +19,7 @@ export default async function NewVideoPage() {
         <Link href="/board" className="text-sm font-bold text-blue">
           ‹ Back
         </Link>
-        <SlidesImport />
+        <SlidesImport sections={sections} defaultDestination="videos" />
         <details className="card">
           <summary className="label-caps cursor-pointer text-xs text-grey">Or add just one video</summary>
           <div className="mt-4">

@@ -25,6 +25,10 @@ The site is one app with a menu that slides in from the left: swipe right (start
 
 Pages: `/` Hub home, `/board` your list, `/shoot-days`, `/videos`, `/ideas`, `/admin`, `/settings`. The "tribuo." logo is `public/tribuo-logo.svg` (Tribuo blue).
 
+## To-do board
+
+`/todos` is a Basecamp-style board. It starts with three sections (Tribuo Marketing, Videography, Content Strategy). Anyone on the team can add a to-do under a section, tick it off (it moves to Completed and shows who ticked it), edit its title, delete it, and **drag** it to reorder or into any other section, with a mouse or a finger. Only the Head of Marketing can add, rename or delete sections. The Slides import can send its titles here: pick a section, or create a new one on the spot. Titles already in that section are skipped.
+
 ## Adding videos from Google Slides
 
 On **New video**, paste a Google Slides link (set to "Anyone with the link can view") or upload a PowerPoint file. The site reads each slide's title (the title box, or the biggest lettering if there isn't one), drops repeats and keeps the first, and shows them as a checklist. Tick the ones to add, fix any title, and tap Add. Titles already on that market's board are skipped. Each new video keeps the Slides link so everyone can open the script. The old content pillar and target post date fields are gone; adding a single video is still there, folded under the checklist.
@@ -99,6 +103,7 @@ To add a person later (for example, a Cambodia videographer), have them add them
    4. `supabase/migrations/0003_shoot_days_and_feedback.sql`
    5. `supabase/migrations/0004_no_briefs.sql`
    6. `supabase/migrations/0005_idea_bank.sql`
+   7. `supabase/migrations/0006_todos.sql`
 3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
 ### 2. Vercel

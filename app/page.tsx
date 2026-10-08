@@ -61,7 +61,7 @@ export default async function HubHome() {
   const ideaPerson = await getIdeaPerson()
   const isAdmin = me?.role === 'lead'
 
-  const [board, mine, newIdeas] = await Promise.all([
+  const [board, mine, newIdeas, openTodos] = await Promise.all([
     me ? loadBoard(supabase) : null,
     ideaPerson
       ? supabase.from('idea_submissions').select('id', { count: 'exact', head: true }).eq('person_id', ideaPerson.id)
@@ -69,9 +69,13 @@ export default async function HubHome() {
     isAdmin
       ? db().from('idea_submissions').select('id', { count: 'exact', head: true }).eq('status', 'new')
       : null,
+    me ? supabase.from('todo_items').select('id', { count: 'exact', head: true }).eq('done', false) : null,
   ])
 
   const boardTagList: Tag[] = me && board ? boardTags(me, board) : [{ text: 'Pick your name to start', tone: 'cream' }]
+  const todoTags: Tag[] = me
+    ? [{ text: `${openTodos?.count ?? 0} open`, tone: (openTodos?.count ?? 0) > 0 ? 'yellow' : 'cream' }]
+    : [{ text: 'Pick your name to start', tone: 'cream' }]
   const ideaTags: Tag[] = ideaPerson
     ? [{ text: `${mine?.count ?? 0} from you`, tone: 'cream' }]
     : [{ text: 'Add your name to start', tone: 'cream' }]
@@ -92,6 +96,12 @@ export default async function HubHome() {
           title="Marketing content workflow progress board"
           blurb="See what has been shot, edited and approved, and who needs a nudge."
           tags={boardTagList}
+        />
+        <ToolCard
+          href="/todos"
+          title="To-do board"
+          blurb="To-dos by section: Tribuo Marketing, Videography, Content Strategy. Tick them off and drag them around."
+          tags={todoTags}
         />
         <ToolCard
           href="/ideas"
