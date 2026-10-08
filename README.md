@@ -19,6 +19,16 @@ Built with Next.js, Supabase (Postgres) and Tailwind, and deployed to Vercel. Vi
 | 5 | WhatsApp nudge buttons, "All videos" list | Done |
 | + | Follow up section: who is overdue or quiet, with a nudge ready to copy | Done |
 
+## Idea Bank
+
+A second tool on the same website, at `/ideas`. It has its own link you can share.
+
+- **No sign-in.** People type their name and pick a department once. Their phone remembers them; "Switch" covers a new phone. The department list is editable in Admin.
+- **Two tabs:** Submit, and Your submissions. People only ever see their own entries.
+- **Submit:** Idea (yellow) or Feedback (salmon), an area, a few words, optional details, and up to 3 files (screenshots are shrunk in the browser; PDF, Word and PowerPoint up to 5 MB). Drag and drop, paste a screenshot, thumbnails, and a larger preview with a Download button.
+- **Admin** (the gear button, Head of Marketing only): **Ideas** has summary counts, filters by type, area, department and status, a status picker on each item (New, Shortlisted, Used, Archived), and the Export card (Copy for Claude, Save CSV, Save JSON). **People** lists everyone who has joined, with a department dropdown each, and the editable department list. **Board** opens the video board settings.
+- **Files** live in a private Supabase storage bucket, one folder per person, and are shown through short-lived links. Uploads go straight from the browser to storage.
+
 ## How it works
 
 The rules live in the database, so the app can't get out of step with them:
@@ -76,12 +86,13 @@ To add a person later (for example, a Cambodia videographer), have them add them
    3. `supabase/migrations/0002_open_team.sql`
    4. `supabase/migrations/0003_shoot_days_and_feedback.sql`
    5. `supabase/migrations/0004_no_briefs.sql`
+   6. `supabase/migrations/0005_idea_bank.sql`
 3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
 ### 2. Vercel
 
 1. Import this repository in Vercel.
-2. Add two environment variables (see `.env.example`): `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+2. Add three environment variables (see `.env.example`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_PUBLISHABLE_KEY`. The publishable key (starts `sb_publishable_`) is the public one and only switches on file attachments in the Idea Bank.
 3. Deploy, open the link, and set up your own name first so you claim Head of Marketing.
 
 ### Local development

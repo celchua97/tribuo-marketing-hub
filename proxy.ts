@@ -4,7 +4,9 @@ import { PERSON_COOKIE } from '@/lib/session'
 // Everyone starts at "Who are you?". The page itself checks the cookie against
 // the team list; this just saves a trip for brand-new visitors.
 export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/who')) return NextResponse.next()
+  // The Idea Bank has its own name-and-department step, so it needs no board login.
+  const path = request.nextUrl.pathname
+  if (path.startsWith('/who') || path === '/ideas' || path.startsWith('/ideas/')) return NextResponse.next()
   if (!request.cookies.get(PERSON_COOKIE)) {
     return NextResponse.redirect(new URL('/who', request.url))
   }

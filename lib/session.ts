@@ -6,3 +6,6 @@ export const PERSON_COOKIE_OPTIONS = {
   path: '/',
   maxAge: 60 * 60 * 24 * 365,
 }
+
+// The Idea Bank remembers people separately: just a name and a department.
+export const IDEA_COOKIE = 'tribuo_idea_person'

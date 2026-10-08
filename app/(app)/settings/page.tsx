@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { requireLead } from '@/lib/data'
 import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
 import type { Profile, Studio } from '@/lib/types'
@@ -8,6 +7,7 @@ import { MARKET_FLAG } from '@/lib/labels'
 import { CopyButton } from '@/components/copy-button'
 import { ActionForm, SubmitButton } from '@/components/action-form'
 import { PageBand } from '@/components/top-bar'
+import { AdminSwitcher } from '@/components/admin-switcher'
 import { addStudio, saveSettings, updatePerson } from '../actions'
 
 type Settings = { edit_due_days: number; approval_due_days: number; revision_due_days: number }
@@ -31,9 +31,7 @@ export default async function SettingsPage() {
     <>
       <PageBand title="Settings" />
       <main className="mx-auto max-w-2xl space-y-6 px-4 py-6">
-      <Link href="/" className="text-sm font-bold text-blue">
-        ‹ Back
-      </Link>
+      <AdminSwitcher active="board" />
 
       <section className="card space-y-4">
         <h2 className="label-caps text-xs text-grey">Due dates</h2>
