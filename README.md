@@ -79,6 +79,8 @@ To add a person later (for example, a Cambodia videographer), have them add them
 
 ### 1. Supabase
 
+**Quickest:** run `supabase/fresh-start.sql` once in the SQL Editor. It rebuilds everything from scratch (it clears this project's tables, so only use it before real data exists). The list below is the same thing step by step.
+
 1. Create a project at [supabase.com](https://supabase.com). The Singapore region is closest to both markets.
 2. Open **SQL Editor**, then paste and run these files in order:
    1. `supabase/migrations/0001_init.sql`
