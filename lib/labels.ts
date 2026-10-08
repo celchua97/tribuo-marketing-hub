@@ -29,6 +29,13 @@ export const ROLE_LABEL: Record<Role, string> = {
   editor: 'Editor',
 }
 
+// Your colour is your role.
+export const ROLE_COLOR: Record<Role, { dot: string; name: string }> = {
+  lead: { dot: 'bg-ink', name: 'Black' },
+  videographer: { dot: 'bg-blue', name: 'Blue' },
+  editor: { dot: 'bg-coral', name: 'Coral' },
+}
+
 const EVENT_VERB: Partial<Record<VideoStatus, string>> = {
   to_shoot: 'wrote the brief',
   draft: 'cleared the brief',

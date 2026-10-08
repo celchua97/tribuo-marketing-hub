@@ -11,7 +11,7 @@ export type VideoStatus =
 
 export type Profile = {
   id: string
-  email: string
+  email: string | null
   full_name: string
   role: Role
   market: Market | null

@@ -1,22 +1,18 @@
 import Link from 'next/link'
 import { requireLead } from '@/lib/data'
-import { MARKET_FLAG, ROLE_LABEL } from '@/lib/labels'
-import type { Market, Profile, Role } from '@/lib/types'
+import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
+import type { Profile } from '@/lib/types'
 import { ActionForm, SubmitButton } from '@/components/action-form'
-import { inviteMember, removeInvite, saveSettings } from '../actions'
+import { saveSettings, updatePerson } from '../actions'
 
 type Settings = { edit_due_days: number; approval_due_days: number; revision_due_days: number }
-type Invite = { email: string; full_name: string; role: Role; market: Market | null }
 
 export default async function SettingsPage() {
-  const { supabase } = await requireLead()
-  const [{ data: settings }, { data: people }, { data: invites }] = await Promise.all([
+  const { supabase, me } = await requireLead()
+  const [{ data: settings }, { data: people }] = await Promise.all([
     supabase.from('settings').select('*').single<Settings>(),
-    supabase.from('profiles').select('*').order('created_at').returns<Profile[]>(),
-    supabase.from('team_invites').select('*').order('created_at').returns<Invite[]>(),
+    supabase.from('profiles').select('*').eq('active', true).order('created_at').returns<Profile[]>(),
   ])
-  const joined = new Set((people ?? []).map((p) => p.email))
-  const pending = (invites ?? []).filter((i) => !joined.has(i.email))
 
   const dueFields: { name: keyof Settings; label: string; hint: string }[] = [
     { name: 'edit_due_days', label: 'Edit due', hint: 'days after the shoot' },
@@ -59,57 +55,44 @@ export default async function SettingsPage() {
 
       <section className="card space-y-4">
         <h2 className="font-semibold">Team</h2>
+        <p className="text-sm text-ink/60">
+          People add themselves from the &ldquo;Who are you?&rdquo; screen. Set a market if someone only
+          covers one, for example a Cambodia videographer.
+        </p>
         <ul className="divide-y divide-ink/5">
           {(people ?? []).map((p) => (
-            <li key={p.id} className="flex items-center justify-between py-2">
-              <span>
-                <span className="font-medium">{p.full_name}</span>{' '}
-                <span className="text-sm text-ink/50">{p.email}</span>
-              </span>
-              <span className="text-sm text-ink/60">
-                {ROLE_LABEL[p.role]} {p.market && MARKET_FLAG[p.market]}
-              </span>
-            </li>
-          ))}
-          {pending.map((i) => (
-            <li key={i.email} className="flex items-center justify-between gap-3 py-2">
-              <span>
-                <span className="font-medium">{i.full_name}</span>{' '}
-                <span className="text-sm text-ink/50">{i.email} · invited, not signed in yet</span>
-              </span>
-              <ActionForm action={removeInvite} className="">
-                <input type="hidden" name="email" value={i.email} />
-                <SubmitButton className="text-sm text-red-700" pendingText="…">
-                  Remove
-                </SubmitButton>
-              </ActionForm>
+            <li key={p.id} className="space-y-2 py-3">
+              <p className="flex items-center gap-2 font-medium">
+                <span className={`size-3 rounded-full ${ROLE_COLOR[p.role].dot}`} />
+                {p.full_name}
+                <span className="text-sm font-normal text-ink/50">{ROLE_LABEL[p.role]}</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <ActionForm action={updatePerson} className="flex flex-1 items-center gap-2">
+                  <input type="hidden" name="person_id" value={p.id} />
+                  <select name="market" defaultValue={p.market ?? ''} className="field py-2" aria-label={`${p.full_name} covers`}>
+                    <option value="">Both markets</option>
+                    <option value="MY">Malaysia only</option>
+                    <option value="KH">Cambodia only</option>
+                  </select>
+                  <SubmitButton className="chip shrink-0" pendingText="…">
+                    Save
+                  </SubmitButton>
+                </ActionForm>
+                {p.id !== me.id && (
+                  <ActionForm action={updatePerson} className="">
+                    <input type="hidden" name="person_id" value={p.id} />
+                    <input type="hidden" name="market" value={p.market ?? ''} />
+                    <input type="hidden" name="active" value="false" />
+                    <SubmitButton className="chip shrink-0 text-red-700" pendingText="…">
+                      Remove
+                    </SubmitButton>
+                  </ActionForm>
+                )}
+              </div>
             </li>
           ))}
         </ul>
-
-        <details>
-          <summary className="cursor-pointer text-sm font-semibold text-blue">+ Add someone</summary>
-          <ActionForm action={inviteMember} className="mt-3 space-y-3">
-            <input name="full_name" className="field" placeholder="Name" required />
-            <input name="email" type="email" className="field" placeholder="Email" required />
-            <div className="grid grid-cols-2 gap-3">
-              <select name="role" className="field" defaultValue="videographer">
-                <option value="videographer">Videographer</option>
-                <option value="editor">Editor</option>
-                <option value="lead">Head of Marketing</option>
-              </select>
-              <select name="market" className="field" defaultValue="">
-                <option value="">Both markets</option>
-                <option value="MY">Malaysia only</option>
-                <option value="KH">Cambodia only</option>
-              </select>
-            </div>
-            <p className="text-sm text-ink/60">
-              They can then sign in with this email. No password needed.
-            </p>
-            <SubmitButton>Add to team</SubmitButton>
-          </ActionForm>
-        </details>
       </section>
     </main>
   )

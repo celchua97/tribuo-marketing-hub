@@ -19,40 +19,40 @@ function done(error?: { message: string } | null): ActionState {
 }
 
 // ---------------------------------------------------------------------------
-// Videos (Celine only)
+// Videos (Head of Marketing only; the database checks this too)
 // ---------------------------------------------------------------------------
 export async function saveVideo(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireLead()
-  const id = text(formData, 'id')
+  const { supabase, me } = await requireLead()
   const episode = text(formData, 'episode_number')
-  const fields = {
-    title: text(formData, 'title'),
-    market: text(formData, 'market'),
-    pillar_id: text(formData, 'pillar_id') || null,
-    episode_number: episode ? Number(episode) : null,
-    brief: text(formData, 'brief') || null,
-    reference_link: text(formData, 'reference_link') || null,
-    target_post_date: text(formData, 'target_post_date') || null,
-  }
-  if (!fields.title) return { error: 'Add a title.' }
-  if (fields.market !== 'MY' && fields.market !== 'KH') return { error: 'Pick a market.' }
-  if (fields.episode_number !== null && !(fields.episode_number > 0)) {
-    return { error: 'Episode number must be a positive number.' }
-  }
+  const market = text(formData, 'market')
+  const title = text(formData, 'title')
+  if (!title) return { error: 'Add a title.' }
+  if (market !== 'MY' && market !== 'KH') return { error: 'Pick a market.' }
+  if (episode && !(Number(episode) > 0)) return { error: 'Episode number must be a positive number.' }
 
-  const query = id
-    ? supabase.from('videos').update(fields).eq('id', id).select('id').single()
-    : supabase.from('videos').insert(fields).select('id').single()
-  const { data, error } = await query
+  const { data, error } = await supabase.rpc('save_video', {
+    p_actor: me.id,
+    p_id: text(formData, 'id') || null,
+    p_title: title,
+    p_market: market,
+    p_pillar_id: text(formData, 'pillar_id') || null,
+    p_episode_number: episode ? Number(episode) : null,
+    p_brief: text(formData, 'brief') || null,
+    p_reference_link: text(formData, 'reference_link') || null,
+    p_target_post_date: text(formData, 'target_post_date') || null,
+  })
   if (error) return { error: friendlyError(error.message) }
 
   revalidatePath('/', 'layout')
-  redirect(`/videos/${data.id}`)
+  redirect(`/videos/${data}`)
 }
 
 export async function deleteVideo(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireLead()
-  const { error } = await supabase.from('videos').delete().eq('id', text(formData, 'video_id'))
+  const { supabase, me } = await requireLead()
+  const { error } = await supabase.rpc('delete_video', {
+    p_actor: me.id,
+    p_video_id: text(formData, 'video_id'),
+  })
   if (error) return { error: friendlyError(error.message) }
   revalidatePath('/', 'layout')
   redirect('/')
@@ -62,14 +62,18 @@ export async function deleteVideo(_prev: ActionState, formData: FormData): Promi
 // Chain transitions
 // ---------------------------------------------------------------------------
 export async function markShot(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireMe()
-  const { error } = await supabase.rpc('mark_shot', { p_video_id: text(formData, 'video_id') })
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('mark_shot', {
+    p_actor: me.id,
+    p_video_id: text(formData, 'video_id'),
+  })
   return done(error)
 }
 
 export async function submitForReview(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireMe()
+  const { supabase, me } = await requireMe()
   const { error } = await supabase.rpc('submit_for_review', {
+    p_actor: me.id,
     p_video_id: text(formData, 'video_id'),
     p_drive_link: text(formData, 'drive_link'),
   })
@@ -77,13 +81,16 @@ export async function submitForReview(_prev: ActionState, formData: FormData): P
 }
 
 export async function approveVideo(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireMe()
-  const { error } = await supabase.rpc('approve_video', { p_video_id: text(formData, 'video_id') })
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('approve_video', {
+    p_actor: me.id,
+    p_video_id: text(formData, 'video_id'),
+  })
   return done(error)
 }
 
 export async function requestChanges(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireMe()
+  const { supabase, me } = await requireMe()
   let comments: unknown
   try {
     comments = JSON.parse(text(formData, 'comments') || '[]')
@@ -91,6 +98,7 @@ export async function requestChanges(_prev: ActionState, formData: FormData): Pr
     return { error: 'Something went wrong reading your comments. Try again.' }
   }
   const { error } = await supabase.rpc('request_changes', {
+    p_actor: me.id,
     p_video_id: text(formData, 'video_id'),
     p_comments: comments,
   })
@@ -98,8 +106,9 @@ export async function requestChanges(_prev: ActionState, formData: FormData): Pr
 }
 
 export async function markPosted(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireMe()
+  const { supabase, me } = await requireMe()
   const { error } = await supabase.rpc('mark_posted', {
+    p_actor: me.id,
     p_video_id: text(formData, 'video_id'),
     p_posted_link: text(formData, 'posted_link') || null,
   })
@@ -107,38 +116,27 @@ export async function markPosted(_prev: ActionState, formData: FormData): Promis
 }
 
 // ---------------------------------------------------------------------------
-// Settings and team (Celine only)
+// Settings and team (Head of Marketing only)
 // ---------------------------------------------------------------------------
 export async function saveSettings(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireLead()
-  const { error } = await supabase
-    .from('settings')
-    .update({
-      edit_due_days: Number(text(formData, 'edit_due_days')),
-      approval_due_days: Number(text(formData, 'approval_due_days')),
-      revision_due_days: Number(text(formData, 'revision_due_days')),
-    })
-    .eq('id', true)
+  const { supabase, me } = await requireLead()
+  const { error } = await supabase.rpc('save_settings', {
+    p_actor: me.id,
+    p_edit: Number(text(formData, 'edit_due_days')),
+    p_approval: Number(text(formData, 'approval_due_days')),
+    p_revision: Number(text(formData, 'revision_due_days')),
+  })
   return done(error)
 }
 
-export async function inviteMember(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireLead()
-  const email = text(formData, 'email').toLowerCase()
-  const fullName = text(formData, 'full_name')
-  const role = text(formData, 'role')
-  const market = text(formData, 'market') || null
-  if (!email.includes('@')) return { error: 'Add a valid email.' }
-  if (!fullName) return { error: 'Add their name.' }
-  if (!['lead', 'videographer', 'editor'].includes(role)) return { error: 'Pick a role.' }
-  const { error } = await supabase
-    .from('team_invites')
-    .upsert({ email, full_name: fullName, role, market })
-  return done(error)
-}
-
-export async function removeInvite(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  const { supabase } = await requireLead()
-  const { error } = await supabase.from('team_invites').delete().eq('email', text(formData, 'email'))
+export async function updatePerson(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireLead()
+  const market = text(formData, 'market')
+  const { error } = await supabase.rpc('update_person', {
+    p_actor: me.id,
+    p_person: text(formData, 'person_id'),
+    p_market: market === 'MY' || market === 'KH' ? market : null,
+    p_active: text(formData, 'active') !== 'false',
+  })
   return done(error)
 }

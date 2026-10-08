@@ -1,23 +1,32 @@
 import { cache } from 'react'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { createClient } from './supabase/server'
+import { db } from './supabase/admin'
+import { PERSON_COOKIE } from './session'
 import type { Profile } from './types'
 
 export const VIDEO_WITH_NAMES =
   '*, pillar:content_pillars(name), assignee:profiles!videos_assignee_id_fkey(full_name)'
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// The person remembered on this device, if they're still on the team.
 export const getMe = cache(async () => {
-  const supabase = await createClient()
-  const { data: claims } = await supabase.auth.getClaims()
-  const userId = claims?.claims?.sub
-  if (!userId) redirect('/login')
-  const { data: me } = await supabase.from('profiles').select('*').eq('id', userId).single<Profile>()
-  return { supabase, me }
+  const supabase = db()
+  const id = (await cookies()).get(PERSON_COOKIE)?.value
+  if (!id || !UUID.test(id)) return { supabase, me: null }
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', id)
+    .eq('active', true)
+    .maybeSingle<Profile>()
+  return { supabase, me: data }
 })
 
 export async function requireMe() {
   const { supabase, me } = await getMe()
-  if (!me || !me.active) redirect('/login?error=no_profile')
+  if (!me) redirect('/who')
   return { supabase, me }
 }
 

@@ -4,13 +4,13 @@ A lean internal tool for the Tribuo content team: briefs, shoots, edits and appr
 
 **Chain:** Brief (Celine) → Shoot (Videographer) → Edit (Editor) → Approve (Celine) → Posted
 
-Built with Next.js, Supabase (Postgres and magic-link login) and Tailwind, and deployed to Vercel. Videos stay in Google Drive; the tool only stores links.
+Built with Next.js, Supabase (Postgres) and Tailwind, and deployed to Vercel. Videos stay in Google Drive; the tool only stores links.
 
 ## Build phases
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| 1 | Data model, login, roles, video cards, chain with automatic handover | Done |
+| 1 | Data model, name-and-colour team picker, roles, video cards, chain with automatic handover | Done |
 | 2 | Personal to-do lists as the home screen (overdue, today, upcoming) | Next |
 | 3 | Shoot Days, shot list guardrail, Unscheduled warnings | |
 | 4 | Feedback checkboxes, approval aging | |
@@ -23,7 +23,10 @@ The rules live in the database, so the app can't get out of step with them:
 - **Status only changes through buttons.** Each button calls one database function (`mark_shot`, `submit_for_review`, `approve_video`, `request_changes`, `mark_posted`), and that function checks who is tapping it and what stage the video is at.
 - **Handover is automatic.** Whenever a video changes, a trigger works out whose list it's on (`assignee_id`) and when it's due (`due_on`).
 - **History is automatic.** Every status change, submission and round of feedback is written to `video_events`, with the person and the time.
-- **Sign-up is invite only.** Only emails added in Settings > Team (or in `team_invites`) can sign in.
+- **No sign-in.** Open the link, type your name and tap your colour. The colour is your role: black is Head of Marketing, blue is Videographer, coral is Editor. Your phone remembers you. On a new device, tap your name on the list. Head of Marketing can only be claimed once.
+- **The browser never touches the database.** The server uses a secret key and checks your role in the database function for every action. The public key is locked out completely.
+
+> Because there are no passwords, anyone with the link can tap Celine's name and act as Head of Marketing. Keep the link inside the team. If that ever matters, a PIN on the Head of Marketing name is a small addition.
 
 ### Who has it, and when it's due
 
@@ -44,7 +47,6 @@ Writing a brief moves a video from "Brief to write" to "To shoot" automatically.
 | Table | What it holds |
 | --- | --- |
 | `profiles` | Team members: name, role (`lead`, `videographer`, `editor`), optional market, timezone, WhatsApp number (for a later integration) |
-| `team_invites` | Emails allowed to sign in, with their role |
 | `settings` | Due-date defaults and the team timezone |
 | `content_pillars` | Pillar dropdown options |
 | `brief_templates` | Reusable briefs |
@@ -55,37 +57,24 @@ Writing a brief moves a video from "Brief to write" to "To shoot" automatically.
 | `feedback_comments` | One row per comment line, with optional timestamp, resolved time and a "needs clarification" flag |
 | `video_events` | Automatic history; also the event feed a WhatsApp or Telegram integration can read later |
 
-To add a person later (for example, a Cambodia videographer), add them in Settings > Team and set their market to Cambodia. Cambodia videos then go to them automatically, and Malaysia videos keep going to whoever covers Malaysia.
+To add a person later (for example, a Cambodia videographer), have them add themselves as a Videographer, then set their market to Cambodia in Settings > Team. Cambodia videos then go to them automatically, and Malaysia videos keep going to whoever covers Malaysia.
 
 ## Setup
 
 ### 1. Supabase
 
 1. Create a project at [supabase.com](https://supabase.com). The Singapore region is closest to both markets.
-2. Open **SQL Editor**, then paste and run `supabase/migrations/0001_init.sql`, followed by `supabase/seed.sql`.
-3. Add yourself and the team (replace the emails):
-   ```sql
-   insert into public.team_invites (email, full_name, role, market) values
-     ('you@tribuo.com', 'Celine', 'lead', null),
-     ('videographer@tribuo.com', 'Videographer name', 'videographer', null),
-     ('editor@tribuo.com', 'Editor name', 'editor', null);
-   ```
-4. **Authentication > Sign In / Providers**: keep Email enabled and "Allow new users to sign up" **on**. The invite list is what blocks strangers.
-5. **Authentication > URL Configuration**: set Site URL to your Vercel URL, and add `https://<your-vercel-url>/auth/confirm` and `http://localhost:3000/auth/confirm` under Redirect URLs.
-6. **Authentication > Emails > Magic link**: replace the template body so links work when opened from a phone's mail app, and include the 6-digit code as a fallback:
-   ```html
-   <h2>Sign in to Tribuo content</h2>
-   <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Tap here to sign in</a></p>
-   <p>Or enter this code: <strong>{{ .Token }}</strong></p>
-   ```
-   Do the same for the **Confirm signup** template, which is used the first time each person signs in.
-7. From **Project Settings > API**, copy the Project URL and the publishable key.
+2. Open **SQL Editor**, then paste and run these files in order:
+   1. `supabase/migrations/0001_init.sql`
+   2. `supabase/seed.sql`
+   3. `supabase/migrations/0002_open_team.sql`
+3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
 ### 2. Vercel
 
 1. Import this repository in Vercel.
-2. Add the environment variables from `.env.example`: `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-3. Deploy, then put the deployed URL into Supabase step 5.
+2. Add two environment variables (see `.env.example`): `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+3. Deploy, open the link, and set up your own name first so you claim Head of Marketing.
 
 ### Local development
 
@@ -96,3 +85,7 @@ npm run dev
 ```
 
 `npm run typecheck` and `npm run build` should both pass before you deploy.
+
+### Adding to the database later
+
+New tables must not be readable with the public key. Migrations after `0002` should end with `revoke all on <table> from anon, authenticated;` (the default privileges set in `0002` already cover this in the Supabase SQL editor, but check).

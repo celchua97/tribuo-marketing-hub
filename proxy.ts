@@ -1,38 +1,14 @@
-import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-import { supabaseKey, supabaseUrl } from '@/lib/supabase/env'
+import { PERSON_COOKIE } from '@/lib/session'
 
-const PUBLIC_PATHS = ['/login', '/auth']
-
-export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request })
-
-  const supabase = createServerClient(supabaseUrl, supabaseKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll()
-      },
-      setAll(cookiesToSet, headers) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-        response = NextResponse.next({ request })
-        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
-        Object.entries(headers).forEach(([key, value]) => response.headers.set(key, value))
-      },
-    },
-  })
-
-  const { data } = await supabase.auth.getClaims()
-  const path = request.nextUrl.pathname
-  const isPublic = PUBLIC_PATHS.some((p) => path.startsWith(p))
-
-  if (!data?.claims && !isPublic) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    url.search = ''
-    return NextResponse.redirect(url)
+// Everyone starts at "Who are you?". The page itself checks the cookie against
+// the team list; this just saves a trip for brand-new visitors.
+export function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/who')) return NextResponse.next()
+  if (!request.cookies.get(PERSON_COOKIE)) {
+    return NextResponse.redirect(new URL('/who', request.url))
   }
-
-  return response
+  return NextResponse.next()
 }
 
 export const config = {
