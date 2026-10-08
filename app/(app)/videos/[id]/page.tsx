@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireMe, VIDEO_WITH_NAMES } from '@/lib/data'
 import { eventText } from '@/lib/labels'
-import { formatDate, formatDateTime } from '@/lib/dates'
+import { formatDateTime } from '@/lib/dates'
 import type { FeedbackComment, Profile, Submission, VideoEvent, VideoWithNames } from '@/lib/types'
 import { AgeBadge, DueBadge, MarketFlag, StatusPill } from '@/components/badges'
 import { CommentChecklist } from '@/components/comment-checklist'
@@ -134,12 +134,6 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         ) : (
           <p className="text-grey">No Google Slides link added.</p>
         )}
-        <dl className="text-sm">
-          <dt className="text-grey">Target post date</dt>
-          <dd className="font-bold">
-            {video.target_post_date ? formatDate(video.target_post_date) : 'Not set'}
-          </dd>
-        </dl>
       </section>
 
       {(submissions ?? []).length > 1 && (

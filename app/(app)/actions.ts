@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireLead, requireMe } from '@/lib/data'
 import { friendlyError } from '@/lib/labels'
+import { looksLikeZip, slidesIdFromUrl, titlesFromPptx } from '@/lib/slides'
 
 export type ActionState = { error?: string } | undefined
 
@@ -37,11 +38,11 @@ export async function saveVideo(_prev: ActionState, formData: FormData): Promise
     p_id: text(formData, 'id') || null,
     p_title: title,
     p_market: market,
-    p_pillar_id: text(formData, 'pillar_id') || null,
+    p_pillar_id: null,
     p_episode_number: episode ? Number(episode) : null,
     p_brief: null,
     p_reference_link: text(formData, 'reference_link') || null,
-    p_target_post_date: text(formData, 'target_post_date') || null,
+    p_target_post_date: null,
   })
   if (error) return { error: friendlyError(error.message) }
 
@@ -249,4 +250,101 @@ export async function flagComment(commentId: string, flag: boolean): Promise<Act
     p_flag: flag,
   })
   return done(error)
+}
+
+// ---------------------------------------------------------------------------
+// Slides import: read the slide titles and add them as videos
+// ---------------------------------------------------------------------------
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024
+const MAX_DECK_BYTES = 40 * 1024 * 1024
+
+export type SlidesResult = { error?: string; titles?: string[]; slides?: number; link?: string }
+
+export async function extractSlides(formData: FormData): Promise<SlidesResult> {
+  await requireLead()
+  const link = text(formData, 'slides_url')
+  const file = formData.get('file')
+  let bytes: Uint8Array
+
+  try {
+    if (file instanceof File && file.size > 0) {
+      if (!/\.pptx$/i.test(file.name)) {
+        return { error: 'Choose a PowerPoint file ending in .pptx. In Google Slides: File, Download, Microsoft PowerPoint.' }
+      }
+      if (file.size > MAX_UPLOAD_BYTES) {
+        return { error: 'That file is over 4 MB. Paste the Google Slides link instead.' }
+      }
+      bytes = new Uint8Array(await file.arrayBuffer())
+    } else if (link) {
+      const id = slidesIdFromUrl(link)
+      if (!id) return { error: 'That doesn’t look like a Google Slides link. It should contain /presentation/d/ and a long code.' }
+      const base = process.env.SLIDES_EXPORT_BASE ?? 'https://docs.google.com'
+      const res = await fetch(`${base}/presentation/d/${id}/export/pptx`, {
+        redirect: 'follow',
+        signal: AbortSignal.timeout(40_000),
+      })
+      const buf = new Uint8Array(await res.arrayBuffer())
+      if (!res.ok || !looksLikeZip(buf)) {
+        return {
+          error:
+            'We couldn’t open that deck. In Google Slides, tap Share and set “Anyone with the link” to Viewer. Or download it as PowerPoint and upload the file here.',
+        }
+      }
+      if (buf.length > MAX_DECK_BYTES) return { error: 'That deck is very large. Try a shorter one.' }
+      bytes = buf
+    } else {
+      return { error: 'Paste a Google Slides link, or choose a PowerPoint file.' }
+    }
+
+    const { titles, slides } = titlesFromPptx(bytes)
+    if (titles.length === 0) return { error: 'We couldn’t find any slide titles in that deck.', slides }
+    return { titles, slides, link }
+  } catch {
+    return { error: 'We couldn’t read that deck. Check the link, or try uploading it as a PowerPoint file.' }
+  }
+}
+
+export async function addVideosFromSlides(input: {
+  market: string
+  titles: string[]
+  link: string
+}): Promise<{ error?: string; added?: number; skipped?: number }> {
+  const { supabase, me } = await requireLead()
+  if (input.market !== 'MY' && input.market !== 'KH') return { error: 'Pick a market first.' }
+  const link = input.link.trim()
+  if (link && !/^https:\/\//i.test(link)) return { error: 'The Slides link has to start with https://' }
+
+  const key = (t: string) => t.toLowerCase().replace(/[\s\p{P}]+/gu, ' ').trim()
+  const { data: existing } = await supabase.from('videos').select('title').eq('market', input.market)
+  const taken = new Set((existing ?? []).map((v: { title: string }) => key(v.title)))
+
+  let added = 0
+  let skipped = 0
+  for (const raw of input.titles.slice(0, 150)) {
+    const title = raw.replace(/\s+/g, ' ').trim().slice(0, 140)
+    if (!title) continue
+    if (taken.has(key(title))) {
+      skipped++
+      continue
+    }
+    taken.add(key(title))
+    const { error } = await supabase.rpc('save_video', {
+      p_actor: me.id,
+      p_id: null,
+      p_title: title,
+      p_market: input.market,
+      p_pillar_id: null,
+      p_episode_number: null,
+      p_brief: null,
+      p_reference_link: link || null,
+      p_target_post_date: null,
+    })
+    if (error) {
+      revalidatePath('/', 'layout')
+      return { error: `${friendlyError(error.message)} (${added} added before that.)`, added, skipped }
+    }
+    added++
+  }
+  revalidatePath('/', 'layout')
+  return { added, skipped }
 }

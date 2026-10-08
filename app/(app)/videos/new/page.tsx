@@ -3,6 +3,10 @@ import { requireLead } from '@/lib/data'
 import { loadVideoFormData } from '@/lib/form-data'
 import { VideoForm } from '@/components/video-form'
 import { PageBand } from '@/components/top-bar'
+import { SlidesImport } from '@/components/videos/slides-import'
+
+// Reading a big deck from Google can take a few seconds
+export const maxDuration = 60
 
 export default async function NewVideoPage() {
   const { supabase } = await requireLead()
@@ -14,9 +18,13 @@ export default async function NewVideoPage() {
         <Link href="/board" className="text-sm font-bold text-blue">
           ‹ Back
         </Link>
-        <div className="card">
-          <VideoForm {...formData} />
-        </div>
+        <SlidesImport />
+        <details className="card">
+          <summary className="label-caps cursor-pointer text-xs text-grey">Or add just one video</summary>
+          <div className="mt-4">
+            <VideoForm {...formData} />
+          </div>
+        </details>
       </main>
     </>
   )

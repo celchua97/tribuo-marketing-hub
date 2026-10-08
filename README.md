@@ -25,6 +25,10 @@ The site is one app with a menu that slides in from the left: swipe right (start
 
 Pages: `/` Hub home, `/board` your list, `/shoot-days`, `/videos`, `/ideas`, `/admin`, `/settings`. The "tribuo." logo is `public/tribuo-logo.svg` (Tribuo blue).
 
+## Adding videos from Google Slides
+
+On **New video**, paste a Google Slides link (set to "Anyone with the link can view") or upload a PowerPoint file. The site reads each slide's title (the title box, or the biggest lettering if there isn't one), drops repeats and keeps the first, and shows them as a checklist. Tick the ones to add, fix any title, and tap Add. Titles already on that market's board are skipped. Each new video keeps the Slides link so everyone can open the script. The old content pillar and target post date fields are gone; adding a single video is still there, folded under the checklist.
+
 ## Idea Bank
 
 A second tool on the same website, at `/ideas`. It has its own link you can share.

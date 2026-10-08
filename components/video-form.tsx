@@ -2,17 +2,15 @@
 
 import { useState } from 'react'
 import { saveVideo } from '@/app/(app)/actions'
-import type { Market, Pillar, Video } from '@/lib/types'
+import type { Market, Video } from '@/lib/types'
 import { MARKET_FLAG, MARKET_NAME } from '@/lib/labels'
 import { ActionForm, SubmitButton } from './action-form'
 
 export function VideoForm({
   video,
-  pillars,
   nextEpisode,
 }: {
   video?: Video
-  pillars: Pillar[]
   nextEpisode: Record<Market, number>
 }) {
   const [market, setMarket] = useState<Market>(video?.market ?? 'MY')
@@ -46,48 +44,28 @@ export function VideoForm({
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="label" htmlFor="pillar_id">
-            Content pillar
-          </label>
-          <select
-            id="pillar_id"
-            name="pillar_id"
-            className="field"
-            defaultValue={video?.pillar_id ?? ''}
-          >
-            <option value="">None</option>
-            {pillars.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="label" htmlFor="episode_number">
-            Episode (optional)
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="episode_number"
-              name="episode_number"
-              className="field min-w-0"
-              inputMode="numeric"
-              value={episode}
-              onChange={(e) => setEpisode(e.target.value.replace(/\D/g, ''))}
-            />
-            {!episode && (
-              <button
-                type="button"
-                className="chip shrink-0"
-                onClick={() => setEpisode(String(nextEpisode[market]))}
-              >
-                #{nextEpisode[market]}
-              </button>
-            )}
-          </div>
+      <div>
+        <label className="label" htmlFor="episode_number">
+          Episode (optional)
+        </label>
+        <div className="flex gap-2">
+          <input
+            id="episode_number"
+            name="episode_number"
+            className="field min-w-0"
+            inputMode="numeric"
+            value={episode}
+            onChange={(e) => setEpisode(e.target.value.replace(/\D/g, ''))}
+          />
+          {!episode && (
+            <button
+              type="button"
+              className="chip shrink-0"
+              onClick={() => setEpisode(String(nextEpisode[market]))}
+            >
+              #{nextEpisode[market]}
+            </button>
+          )}
         </div>
       </div>
 
@@ -103,19 +81,6 @@ export function VideoForm({
           className="field"
           placeholder="https://docs.google.com/presentation/…"
           defaultValue={video?.reference_link ?? ''}
-        />
-      </div>
-
-      <div>
-        <label className="label" htmlFor="target_post_date">
-          Target post date
-        </label>
-        <input
-          id="target_post_date"
-          name="target_post_date"
-          type="date"
-          className="field"
-          defaultValue={video?.target_post_date ?? ''}
         />
       </div>
 
