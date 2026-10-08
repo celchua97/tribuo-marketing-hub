@@ -108,7 +108,7 @@ export default async function HubHome() {
           />
         )}
         <p className="px-1 text-center text-sm text-grey">
-          Tip: swipe right, or tap the menu button, to jump between tools.
+          Tip: on a phone, swipe right or tap the menu button. On a laptop, move your mouse to the left edge.
         </p>
       </main>
     </div>

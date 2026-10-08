@@ -21,7 +21,7 @@ Built with Next.js, Supabase (Postgres) and Tailwind, and deployed to Vercel. Vi
 
 ## The Hub
 
-The site is one app with a menu that slides in from the left: swipe right (start anywhere in the left part of the screen) or tap the menu button. On a laptop it stays open as a sidebar. It lists the **Content workflow board** (Your list, Shoot days, All videos), the **Idea Bank** (Submit, Your submissions) and, for the Head of Marketing, **Admin**. The home page (`/`) shows each tool with a one-line summary of what needs you. People can add it to their phone's home screen and it opens full screen like an app.
+The site is one app with a menu that slides in from the left: swipe right (start anywhere in the left part of the screen) or tap the menu button. On a laptop or desktop with a mouse it stays out of sight until you move the pointer to the left edge, then slides over the page (nothing jumps) and tucks away when you leave. Keyboard users can Tab to the menu button. It lists the **Content workflow board** (Your list, Shoot days, All videos), the **Idea Bank** (Submit, Your submissions) and, for the Head of Marketing, **Admin**. The home page (`/`) shows each tool with a one-line summary of what needs you. People can add it to their phone's home screen and it opens full screen like an app.
 
 Pages: `/` Hub home, `/board` your list, `/shoot-days`, `/videos`, `/ideas`, `/admin`, `/settings`. The "tribuo." logo is `public/tribuo-logo.svg` (Tribuo blue).
 

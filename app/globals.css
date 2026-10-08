@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 
 /* Tribuo brandbook colours. Nothing outside this list is used. */
+@custom-variant desk (@media (min-width: 1024px) and (hover: hover) and (pointer: fine));
+
 @theme {
   --color-blue: #3750ab;
   --color-canvas: #f7f3eb; /* off-white */

@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <div className="lg:pl-72">{children}</div>
+        {children}
       </body>
     </html>
   )

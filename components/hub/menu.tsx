@@ -39,25 +39,41 @@ const ADMIN: { title: string; blurb: string; items: Item[] } = {
   ],
 }
 
-// The Hub menu. On a phone it slides in from the left: tap the menu button, or
-// swipe right (start anywhere in the left part of the screen). On a laptop it
-// stays open as a sidebar.
+// The Hub menu. It slides in from the left over the page, so nothing jumps.
+// On a phone: tap the menu button, or swipe right (start anywhere in the left
+// part of the screen). On a laptop or desktop with a mouse: move the pointer to
+// the left edge and it appears; move away and it tucks back out of sight.
+const DESK = '(min-width: 1024px) and (hover: hover) and (pointer: fine)'
 export function HubMenu({ isAdmin = false, who }: { isAdmin?: boolean; who?: string }) {
   const path = usePathname()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false) // phone: slid in
+  const [peek, setPeek] = useState(false) // laptop: pointer is on the menu or the left edge
   const openRef = useRef(false)
   const panel = useRef<HTMLElement>(null)
+  const leaveTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
   openRef.current = open
 
+  const showPeek = () => {
+    clearTimeout(leaveTimer.current)
+    setPeek(true)
+  }
+  const hidePeekSoon = () => {
+    clearTimeout(leaveTimer.current)
+    leaveTimer.current = setTimeout(() => setPeek(false), 300)
+  }
+
   // Close when you go somewhere
-  useEffect(() => setOpen(false), [path])
+  useEffect(() => {
+    setOpen(false)
+    setPeek(false)
+  }, [path])
 
   // Swipe right to open, swipe left to close
   useEffect(() => {
     let sx = 0
     let sy = 0
     let tracking = false
-    const wide = () => window.matchMedia('(min-width: 1024px)').matches
+    const wide = () => window.matchMedia(DESK).matches
     const onStart = (e: TouchEvent) => {
       if (wide() || e.touches.length !== 1) return
       const t = e.touches[0]
@@ -85,19 +101,28 @@ export function HubMenu({ isAdmin = false, who }: { isAdmin?: boolean; who?: str
     }
   }, [])
 
-  // Escape closes; the page behind doesn't scroll while the menu is open
+  // Escape closes; on a phone the page behind doesn't scroll while the menu is open
   useEffect(() => {
-    if (!open) return
-    panel.current?.focus()
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    if (!open && !peek) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        setPeek(false)
+      }
+    }
     document.addEventListener('keydown', onKey)
     const wasOverflow = document.body.style.overflow
-    if (!window.matchMedia('(min-width: 1024px)').matches) document.body.style.overflow = 'hidden'
+    if (open && !window.matchMedia(DESK).matches) document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', onKey)
       document.body.style.overflow = wasOverflow
     }
-  }, [open])
+  }, [open, peek])
+
+  // Moving focus into the menu once it is showing (phone button or keyboard)
+  useEffect(() => {
+    if (open || peek) panel.current?.focus()
+  }, [open, peek])
 
   const groups = isAdmin ? [...GROUPS, ADMIN] : GROUPS
   const link = (i: Item) => {
@@ -123,8 +148,8 @@ export function HubMenu({ isAdmin = false, who }: { isAdmin?: boolean; who?: str
         aria-label="Open menu"
         aria-expanded={open}
         aria-controls="hub-menu"
-        onClick={() => setOpen(true)}
-        className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-white lg:hidden"
+        onClick={() => (window.matchMedia(DESK).matches ? setPeek(true) : setOpen(true))}
+        className="-ml-2 flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-white desk:sr-only desk:focus:not-sr-only"
       >
         <svg aria-hidden viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
           <path d="M4 7h16M4 12h16M4 17h16" />
@@ -134,8 +159,20 @@ export function HubMenu({ isAdmin = false, who }: { isAdmin?: boolean; who?: str
       <div
         aria-hidden
         onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 bg-ink/50 transition-opacity duration-200 lg:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-40 bg-ink/50 transition-opacity duration-200 desk:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       />
+
+      {/* Laptop: a thin strip along the left edge that wakes the menu when the pointer touches it */}
+      <div
+        aria-hidden
+        onMouseEnter={showPeek}
+        onMouseLeave={hidePeekSoon}
+        className="fixed inset-y-0 left-0 z-40 hidden w-4 desk:block"
+      >
+        <span
+          className={`absolute top-1/2 left-0 h-16 w-1.5 -translate-y-1/2 rounded-r-full bg-beige transition-opacity duration-200 ${peek ? 'opacity-0' : 'opacity-100'}`}
+        />
+      </div>
 
       <aside
         id="hub-menu"
@@ -143,7 +180,10 @@ export function HubMenu({ isAdmin = false, who }: { isAdmin?: boolean; who?: str
         tabIndex={-1}
         aria-label="Hub menu"
         data-open={open}
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col gap-6 overflow-y-auto bg-canvas p-5 outline-none transition-[transform,visibility] duration-200 lg:visible lg:translate-x-0 lg:border-r lg:border-beige ${
+        data-peek={peek}
+        onMouseEnter={showPeek}
+        onMouseLeave={hidePeekSoon}
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col gap-6 overflow-y-auto bg-canvas p-5 outline-none transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none desk:border-r desk:border-beige desk:data-[peek=false]:invisible desk:data-[peek=false]:-translate-x-full desk:data-[peek=true]:visible desk:data-[peek=true]:translate-x-0 ${
           open ? 'visible translate-x-0' : 'invisible -translate-x-full'
         }`}
       >
@@ -155,7 +195,7 @@ export function HubMenu({ isAdmin = false, who }: { isAdmin?: boolean; who?: str
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="flex size-11 items-center justify-center rounded-full text-xl hover:bg-white lg:hidden"
+            className="flex size-11 items-center justify-center rounded-full text-xl hover:bg-white desk:hidden"
           >
             ×
           </button>
