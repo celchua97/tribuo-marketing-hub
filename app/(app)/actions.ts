@@ -29,6 +29,8 @@ export async function saveVideo(_prev: ActionState, formData: FormData): Promise
   if (!title) return { error: 'Add a title.' }
   if (market !== 'MY' && market !== 'KH') return { error: 'Pick a market.' }
   if (episode && !(Number(episode) > 0)) return { error: 'Episode number must be a positive number.' }
+  const slides = text(formData, 'reference_link')
+  if (slides && !/^https:\/\//i.test(slides)) return { error: 'Paste the full Google Slides link, starting with https://' }
 
   const { data, error } = await supabase.rpc('save_video', {
     p_actor: me.id,
@@ -37,7 +39,7 @@ export async function saveVideo(_prev: ActionState, formData: FormData): Promise
     p_market: market,
     p_pillar_id: text(formData, 'pillar_id') || null,
     p_episode_number: episode ? Number(episode) : null,
-    p_brief: text(formData, 'brief') || null,
+    p_brief: null,
     p_reference_link: text(formData, 'reference_link') || null,
     p_target_post_date: text(formData, 'target_post_date') || null,
   })

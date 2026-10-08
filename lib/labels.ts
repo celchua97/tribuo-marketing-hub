@@ -39,8 +39,7 @@ export const ROLE_COLOR: Record<Role, { dot: string; name: string }> = {
 }
 
 const EVENT_VERB: Partial<Record<VideoStatus, string>> = {
-  to_shoot: 'wrote the brief',
-  draft: 'cleared the brief',
+  to_shoot: 'planned it',
   to_edit: 'marked it shot',
   in_review: 'sent it for review',
   changes_requested: 'requested changes',
@@ -50,6 +49,7 @@ const EVENT_VERB: Partial<Record<VideoStatus, string>> = {
 
 export function eventText(kind: string, to: VideoStatus | null, payload: Record<string, unknown>) {
   if (kind === 'created') return 'added the video'
+  if (kind === 'skipped') return `skipped the shot (${String(payload.reason ?? 'no reason')})`
   if (kind === 'submitted') return `pasted the edit (version ${payload.round})`
   if (kind === 'changes_requested') {
     const n = Number(payload.comments)

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { agoLabel } from '@/lib/dates'
 import type { VideoWithNames } from '@/lib/types'
 import { AgeBadge, DueBadge, MarketFlag, StatusPill } from './badges'
 
@@ -49,7 +50,9 @@ export function VideoCard({
         {flagged && <span className="tag tag-yellow">Editor has a question</span>}
         <DueBadge dueOn={video.due_on} timeZone={timeZone} />
         {showAssignee && video.assignee && (
-          <span className="text-xs text-grey">With {video.assignee.full_name}</span>
+          <span className="text-xs text-grey">
+            With {video.assignee.full_name} · updated {agoLabel(video.status_changed_at)}
+          </span>
         )}
       </div>
     </Link>

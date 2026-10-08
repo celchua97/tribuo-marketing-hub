@@ -7,6 +7,7 @@ import { PageBand } from '@/components/top-bar'
 import { CopyButton } from '@/components/copy-button'
 import { DueGroups, Section } from '@/components/due-groups'
 import { ShootDayCard } from '@/components/shoot-day-card'
+import { FollowUpSection } from '@/components/follow-up'
 
 export default async function HomePage() {
   const { supabase, me } = await requireMe()
@@ -14,6 +15,13 @@ export default async function HomePage() {
   const plate = plateFor(me, board)
   const tz = me.timezone
   const nudge = buildNudge(me, plate, board.openComments, tz)
+  // A ready-to-paste nudge for each person the Head of Marketing may need to chase
+  const nudges: Record<string, string> = {}
+  if (plate.role === 'lead') {
+    for (const f of plate.followUps) {
+      nudges[f.person.id] = buildNudge(f.person, plateFor(f.person, board), board.openComments, f.person.timezone)
+    }
+  }
   const card = (v: (typeof board.videos)[number], extra: { age?: boolean } = {}) => (
     <VideoCard
       key={v.id}
@@ -43,6 +51,13 @@ export default async function HomePage() {
             <Section title="Waiting for your approval" count={plate.approvals.length}>
               {plate.approvals.map((v) => card(v))}
             </Section>
+            <FollowUpSection
+              followUps={plate.followUps}
+              people={board.people}
+              lastActive={board.lastActive}
+              nudges={nudges}
+              timeZone={tz}
+            />
             <Section title="Questions from the editor" count={plate.questions.length}>
               {plate.questions.map((v) => card(v))}
             </Section>
@@ -56,16 +71,12 @@ export default async function HomePage() {
             <Section title="Ready to post" count={plate.readyToPost.length}>
               {plate.readyToPost.map((v) => card(v))}
             </Section>
-            <Section title="Briefs to write" count={plate.briefs.length}>
-              {plate.briefs.map((v) => card(v))}
-            </Section>
 
             {plate.approvals.length +
               plate.questions.length +
               plate.unscheduled.length +
-              plate.readyToPost.length +
-              plate.briefs.length ===
-              0 && <div className="card text-center text-grey">Nothing waiting on you. Nice.</div>}
+              plate.readyToPost.length ===
+              0 && <div className="card text-center text-grey">Nothing else is waiting on you.</div>}
           </>
         )}
 

@@ -100,8 +100,15 @@ export default async function ShootDayPage({ params }: { params: Promise<{ id: s
                       <span className="tag tag-cream">Shot</span>
                     )}
                   </div>
-                  {v.brief && v.status === 'to_shoot' && (
-                    <p className="mt-3 line-clamp-4 whitespace-pre-wrap text-[15px] text-grey">{v.brief}</p>
+                  {v.reference_link && v.status === 'to_shoot' && (
+                    <a
+                      href={v.reference_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-block text-sm font-bold text-blue"
+                    >
+                      Open the Google Slides ↗
+                    </a>
                   )}
                 </div>
               </div>
@@ -199,7 +206,7 @@ export default async function ShootDayPage({ params }: { params: Promise<{ id: s
         )}
         {me.role === 'lead' && !day.closed_at && (unscheduled.data ?? []).length === 0 && (
           <p className="text-sm text-grey">
-            No unscheduled {MARKET_NAME[day.market]} videos waiting. New videos need a brief before they can be planned.
+            No unscheduled {MARKET_NAME[day.market]} videos waiting.
           </p>
         )}
 

@@ -120,35 +120,25 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
 
       <section className="card space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="label-caps text-xs text-grey">Brief</h2>
+          <h2 className="label-caps text-xs text-grey">Direction</h2>
           {me.role === 'lead' && (
             <Link href={`/videos/${id}/edit`} className="text-sm font-bold text-blue">
               Edit
             </Link>
           )}
         </div>
-        {video.brief ? (
-          <p className="whitespace-pre-wrap">{video.brief}</p>
+        {video.reference_link ? (
+          <a href={video.reference_link} target="_blank" rel="noreferrer" className="btn-primary">
+            Open the Google Slides ↗
+          </a>
         ) : (
-          <p className="text-grey">No brief yet.</p>
+          <p className="text-grey">No Google Slides link added.</p>
         )}
-        <dl className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <dt className="text-grey">Target post date</dt>
-            <dd className="font-medium">
-              {video.target_post_date ? formatDate(video.target_post_date) : 'Not set'}
-            </dd>
-          </div>
-          {video.reference_link && (
-            <div>
-              <dt className="text-grey">Reference</dt>
-              <dd>
-                <a href={video.reference_link} target="_blank" rel="noreferrer" className="font-bold text-blue">
-                  Open link ↗
-                </a>
-              </dd>
-            </div>
-          )}
+        <dl className="text-sm">
+          <dt className="text-grey">Target post date</dt>
+          <dd className="font-bold">
+            {video.target_post_date ? formatDate(video.target_post_date) : 'Not set'}
+          </dd>
         </dl>
       </section>
 
@@ -192,13 +182,6 @@ function ActionPanel({ video, me, openCount }: { video: VideoWithNames; me: Prof
   const hidden = <input type="hidden" name="video_id" value={video.id} />
 
   switch (video.status) {
-    case 'draft':
-      return isLead ? (
-        <Link href={`/videos/${video.id}/edit`} className="btn-primary">
-          Write the brief
-        </Link>
-      ) : null
-
     case 'to_shoot':
       if (me.role !== 'videographer' && !isLead) return null
       return (

@@ -2,35 +2,21 @@
 
 import { useState } from 'react'
 import { saveVideo } from '@/app/(app)/actions'
-import type { BriefTemplate, Market, Pillar, Video } from '@/lib/types'
+import type { Market, Pillar, Video } from '@/lib/types'
 import { MARKET_FLAG, MARKET_NAME } from '@/lib/labels'
 import { ActionForm, SubmitButton } from './action-form'
 
 export function VideoForm({
   video,
   pillars,
-  templates,
   nextEpisode,
 }: {
   video?: Video
   pillars: Pillar[]
-  templates: BriefTemplate[]
   nextEpisode: Record<Market, number>
 }) {
   const [market, setMarket] = useState<Market>(video?.market ?? 'MY')
-  const [pillarId, setPillarId] = useState(video?.pillar_id ?? '')
-  const [brief, setBrief] = useState(video?.brief ?? '')
   const [episode, setEpisode] = useState(video?.episode_number?.toString() ?? '')
-  const [templateId, setTemplateId] = useState('')
-
-  function applyTemplate(t: BriefTemplate) {
-    if (brief.trim() && brief !== templates.find((x) => x.id === templateId)?.brief) {
-      if (!confirm('Replace the brief you’ve written with this template?')) return
-    }
-    setTemplateId(t.id)
-    setBrief(t.brief)
-    if (t.pillar_id) setPillarId(t.pillar_id)
-  }
 
   return (
     <ActionForm action={saveVideo} className="space-y-5">
@@ -60,7 +46,7 @@ export function VideoForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label className="label" htmlFor="pillar_id">
             Content pillar
@@ -69,8 +55,7 @@ export function VideoForm({
             id="pillar_id"
             name="pillar_id"
             className="field"
-            value={pillarId}
-            onChange={(e) => setPillarId(e.target.value)}
+            defaultValue={video?.pillar_id ?? ''}
           >
             <option value="">None</option>
             {pillars.map((p) => (
@@ -107,65 +92,34 @@ export function VideoForm({
       </div>
 
       <div>
-        <span className="label">Start from a template</span>
-        <div className="flex flex-wrap gap-2">
-          {templates.map((t) => (
-            <button
-              type="button"
-              key={t.id}
-              onClick={() => applyTemplate(t)}
-              className={`chip ${templateId === t.id ? 'chip-on' : ''}`}
-            >
-              {t.name}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="label" htmlFor="brief">
-          Brief
+        <label className="label" htmlFor="reference_link">
+          Google Slides link (optional)
         </label>
-        <textarea
-          id="brief"
-          name="brief"
-          rows={7}
+        <input
+          id="reference_link"
+          name="reference_link"
+          type="url"
+          inputMode="url"
           className="field"
-          value={brief}
-          onChange={(e) => setBrief(e.target.value)}
-          placeholder="Leave empty to save as an idea. It goes to the videographer once there’s a brief."
+          placeholder="https://docs.google.com/presentation/…"
+          defaultValue={video?.reference_link ?? ''}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div>
-          <label className="label" htmlFor="target_post_date">
-            Target post date
-          </label>
-          <input
-            id="target_post_date"
-            name="target_post_date"
-            type="date"
-            className="field"
-            defaultValue={video?.target_post_date ?? ''}
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="reference_link">
-            Reference link (optional)
-          </label>
-          <input
-            id="reference_link"
-            name="reference_link"
-            type="url"
-            inputMode="url"
-            className="field"
-            defaultValue={video?.reference_link ?? ''}
-          />
-        </div>
+      <div>
+        <label className="label" htmlFor="target_post_date">
+          Target post date
+        </label>
+        <input
+          id="target_post_date"
+          name="target_post_date"
+          type="date"
+          className="field"
+          defaultValue={video?.target_post_date ?? ''}
+        />
       </div>
 
-      <SubmitButton>{video ? 'Save changes' : brief.trim() ? 'Save and send to shoot' : 'Save idea'}</SubmitButton>
+      <SubmitButton>{video ? 'Save changes' : 'Save video'}</SubmitButton>
     </ActionForm>
   )
 }

@@ -33,11 +33,20 @@ export function buildNudge(me: Profile, plate: Plate, openComments: OpenComments
   if (plate.role === 'lead') {
     lines.push(`Hi ${first}, here's your Tribuo content list for ${formatWeekday(today)}.`)
     const body = [
+      ...section(
+        'Follow up',
+        plate.followUps.map((f) => {
+          const bits: string[] = []
+          const late = f.overdueVideos.length + f.overdueDays.length
+          if (late) bits.push(`${late} overdue`)
+          if (f.quiet) bits.push(f.lastActive ? `no update for ${f.quietDays} days` : 'no updates yet')
+          return `${f.person.full_name}: ${bits.join(', ')}`
+        }),
+      ),
       ...section('Waiting for your approval', plate.approvals.map((v) => `${v.title} (${v.market}): ${ageLabel(v.status_changed_at).toLowerCase()}`)),
       ...section('Questions from the editor', plate.questions.map((v) => `${v.title} (${v.market})`)),
       ...section('Not on a Shoot Day yet', plate.unscheduled.map((v) => `${v.title} (${v.market})${v.skip_reason ? `, skipped: ${v.skip_reason}` : ''}`)),
       ...section('Ready to post', plate.readyToPost.map((v) => `${v.title} (${v.market})`)),
-      ...section('Briefs to write', plate.briefs.map((v) => `${v.title} (${v.market})`)),
     ]
     lines.push(...(body.length ? body : ['', 'Nothing is waiting on you today.']))
   } else if (plate.role === 'videographer') {

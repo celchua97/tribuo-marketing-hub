@@ -78,3 +78,12 @@ export function ageLabel(iso: string) {
   const days = Math.floor(h / 24)
   return `Waiting ${days} day${days === 1 ? '' : 's'}`
 }
+
+// "3h ago", "2 days ago"
+export function agoLabel(iso: string) {
+  const h = hoursSince(iso)
+  if (h < 1) return 'just now'
+  if (h < 24) return `${Math.floor(h)}h ago`
+  const d = Math.floor(h / 24)
+  return `${d} day${d === 1 ? '' : 's'} ago`
+}
