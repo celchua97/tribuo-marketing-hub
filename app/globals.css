@@ -61,17 +61,17 @@
 }
 
 @utility btn {
-  @apply inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-base font-bold transition active:scale-[0.98] disabled:opacity-50;
+  @apply inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full px-6 text-base font-bold transition active:scale-[0.98] disabled:cursor-not-allowed;
 }
 
 /* Main action: black, white text */
 @utility btn-primary {
-  @apply btn bg-ink text-white;
+  @apply btn bg-ink text-white disabled:bg-sand disabled:text-grey;
 }
 
 /* Secondary: outlined */
 @utility btn-ghost {
-  @apply btn border-2 border-beige bg-transparent text-ink;
+  @apply btn border-2 border-beige bg-transparent text-ink disabled:text-grey;
 }
 
 @utility field {

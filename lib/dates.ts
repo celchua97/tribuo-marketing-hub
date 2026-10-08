@@ -43,3 +43,38 @@ export function dueLabel(dueOn: string, timeZone: string) {
   if (days < 0) return `${-days} days overdue`
   return `Due ${formatDate(dueOn)}`
 }
+
+export function addDays(isoDate: string, n: number) {
+  const [y, m, d] = isoDate.split('-').map(Number)
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10)
+}
+
+// "Thu 9 Oct" from a plain date
+export function formatWeekday(isoDate: string) {
+  const [y, m, d] = isoDate.split('-').map(Number)
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(y, m - 1, d)))
+}
+
+export function hoursSince(iso: string) {
+  return (Date.now() - Date.parse(iso)) / 3_600_000
+}
+
+export type Age = 'fresh' | 'amber' | 'late'
+
+// Neutral under 24 hours, amber from 24 to 48, red over 48.
+export function ageState(iso: string): Age {
+  const h = hoursSince(iso)
+  return h < 24 ? 'fresh' : h < 48 ? 'amber' : 'late'
+}
+
+export function ageLabel(iso: string) {
+  const h = hoursSince(iso)
+  if (h < 24) return `Waiting ${Math.max(1, Math.floor(h))}h`
+  const days = Math.floor(h / 24)
+  return `Waiting ${days} day${days === 1 ? '' : 's'}`
+}

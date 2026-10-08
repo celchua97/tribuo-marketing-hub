@@ -4,7 +4,8 @@ import { requireMe, VIDEO_WITH_NAMES } from '@/lib/data'
 import { eventText } from '@/lib/labels'
 import { formatDate, formatDateTime } from '@/lib/dates'
 import type { FeedbackComment, Profile, Submission, VideoEvent, VideoWithNames } from '@/lib/types'
-import { DueBadge, MarketFlag, StatusPill } from '@/components/badges'
+import { AgeBadge, DueBadge, MarketFlag, StatusPill } from '@/components/badges'
+import { CommentChecklist } from '@/components/comment-checklist'
 import { ActionForm, SubmitButton } from '@/components/action-form'
 import { PasteLinkField } from '@/components/paste-link-field'
 import { ReviewPanel } from '@/components/review-panel'
@@ -41,7 +42,13 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   if (!video) notFound()
 
   const tz = me.timezone
-  const openComments = (comments ?? []).filter((c) => !c.resolved_at)
+  const allComments = comments ?? []
+  const openComments = allComments.filter((c) => !c.resolved_at)
+  // The latest round of feedback is the checklist; older rounds are tucked away.
+  const latestRound = allComments[allComments.length - 1]?.submission_id ?? null
+  const current = allComments.filter((c) => c.submission_id === latestRound)
+  const earlier = allComments.filter((c) => c.submission_id !== latestRound)
+  const canTick = (me.role === 'editor' || me.role === 'lead') && video.status === 'changes_requested'
 
   return (
     <>
@@ -60,6 +67,12 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <StatusPill status={video.status} />
+          {video.status === 'in_review' && <AgeBadge since={video.status_changed_at} />}
+          {openComments.length > 0 && (
+            <span className="tag tag-salmon">
+              {openComments.length} comment{openComments.length === 1 ? '' : 's'} to fix
+            </span>
+          )}
           <DueBadge dueOn={video.due_on} timeZone={tz} />
           {video.assignee && (
             <span className="text-sm text-grey">
@@ -69,26 +82,29 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
-      <ActionPanel video={video} me={me} />
+      <ActionPanel video={video} me={me} openCount={openComments.length} />
 
-      {openComments.length > 0 && (
-        <section className="card">
-          <h2 className="label-caps mb-3 text-xs text-grey">
-            Changes to make <span className="text-grey">({openComments.length})</span>
+      {current.length > 0 && (
+        <section className="card space-y-3">
+          <h2 className="label-caps text-xs text-grey">
+            Changes to make{' '}
+            <span className="text-grey/70">
+              ({current.filter((c) => !c.resolved_at).length} of {current.length} left)
+            </span>
           </h2>
-          <ul className="space-y-2">
-            {openComments.map((c) => (
-              <li key={c.id} className="flex gap-3 rounded-xl bg-canvas px-3 py-3">
-                {c.timecode && (
-                  <span className="shrink-0 self-start tag tag-blue shrink-0 self-start">
-                    {c.timecode}
-                  </span>
-                )}
-                <span>{c.body}</span>
-              </li>
-            ))}
-          </ul>
+          <CommentChecklist comments={current} canTick={canTick} />
         </section>
+      )}
+
+      {earlier.length > 0 && (
+        <details className="card">
+          <summary className="label-caps cursor-pointer text-xs text-grey">
+            Earlier feedback ({earlier.length})
+          </summary>
+          <div className="mt-3">
+            <CommentChecklist comments={earlier} canTick={false} />
+          </div>
+        </details>
       )}
 
       {video.latest_drive_link && (
@@ -171,7 +187,7 @@ export default async function VideoPage({ params }: { params: Promise<{ id: stri
   )
 }
 
-function ActionPanel({ video, me }: { video: VideoWithNames; me: Profile }) {
+function ActionPanel({ video, me, openCount }: { video: VideoWithNames; me: Profile; openCount: number }) {
   const isLead = me.role === 'lead'
   const hidden = <input type="hidden" name="video_id" value={video.id} />
 
@@ -186,10 +202,30 @@ function ActionPanel({ video, me }: { video: VideoWithNames; me: Profile }) {
     case 'to_shoot':
       if (me.role !== 'videographer' && !isLead) return null
       return (
-        <ActionForm action={markShot}>
-          {hidden}
-          <SubmitButton pendingText="Saving…">✓ Shot</SubmitButton>
-        </ActionForm>
+        <div className="space-y-3">
+          {!video.shoot_day_id && (
+            <div className="card space-y-3">
+              <p className="flex flex-wrap items-center gap-2">
+                <span className="tag tag-salmon">Not on a Shoot Day</span>
+                {video.skip_reason && <span className="tag tag-cream">Skipped: {video.skip_reason}</span>}
+              </p>
+              {isLead && (
+                <Link href="/shoot-days" className="btn-ghost">
+                  Plan a Shoot Day
+                </Link>
+              )}
+            </div>
+          )}
+          {video.shoot_day_id && (
+            <Link href={`/shoot-days/${video.shoot_day_id}`} className="btn-ghost">
+              Open the Shoot Day
+            </Link>
+          )}
+          <ActionForm action={markShot}>
+            {hidden}
+            <SubmitButton pendingText="Saving…">Shot</SubmitButton>
+          </ActionForm>
+        </div>
       )
 
     case 'to_edit':
@@ -200,7 +236,14 @@ function ActionPanel({ video, me }: { video: VideoWithNames; me: Profile }) {
           {hidden}
           <label className="label">Google Drive link to the edit</label>
           <PasteLinkField name="drive_link" placeholder="https://drive.google.com/…" />
-          <SubmitButton pendingText="Sending…">Ready for review</SubmitButton>
+          {openCount > 0 && (
+            <p className="text-sm font-bold text-grey">
+              Tick every comment first. {openCount} left.
+            </p>
+          )}
+          <SubmitButton pendingText="Sending…" disabled={openCount > 0}>
+            Ready for review
+          </SubmitButton>
         </ActionForm>
       )
 

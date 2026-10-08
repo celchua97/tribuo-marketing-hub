@@ -21,7 +21,7 @@ export default async function WhoPage() {
   return (
     <div className="min-h-dvh pb-16">
       <TopBar />
-      <PageBand title="Who are you?" />
+      <PageBand title="Who are you?" nav={false} />
       <main className="mx-auto max-w-md space-y-8 px-4 py-6">
       {people.length > 0 && (
         <section className="space-y-3">

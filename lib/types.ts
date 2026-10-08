@@ -48,6 +48,8 @@ export type Video = {
   shot_at: string | null
   latest_drive_link: string | null
   posted_link: string | null
+  skip_reason: string | null
+  skipped_at: string | null
   created_at: string
 }
 
@@ -66,6 +68,7 @@ export type Submission = {
 
 export type FeedbackComment = {
   id: string
+  submission_id: string | null
   timecode: string | null
   body: string
   position: number
@@ -83,3 +86,23 @@ export type VideoEvent = {
   created_at: string
   actor: { full_name: string } | null
 }
+
+export type ShootDay = {
+  id: string
+  shoot_date: string
+  market: Market
+  studio_id: string | null
+  videographer_id: string | null
+  footage_link: string | null
+  closed_at: string | null
+}
+
+export type ShootDayWithNames = ShootDay & {
+  studio: { name: string } | null
+  videographer: { full_name: string } | null
+}
+
+export type Studio = { id: string; name: string; market: Market; active: boolean }
+
+// What the team sees about a video's open comments
+export type OpenComments = Record<string, { open: number; flagged: boolean }>

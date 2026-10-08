@@ -1,59 +1,103 @@
 import Link from 'next/link'
-import { requireMe, VIDEO_WITH_NAMES } from '@/lib/data'
-import type { VideoWithNames } from '@/lib/types'
+import { requireMe } from '@/lib/data'
+import { loadBoard, plateFor } from '@/lib/board'
+import { buildNudge, shootReminder } from '@/lib/nudge'
 import { VideoCard } from '@/components/video-card'
 import { PageBand } from '@/components/top-bar'
+import { CopyButton } from '@/components/copy-button'
+import { DueGroups, Section } from '@/components/due-groups'
+import { ShootDayCard } from '@/components/shoot-day-card'
 
 export default async function HomePage() {
   const { supabase, me } = await requireMe()
-  const { data } = await supabase
-    .from('videos')
-    .select(VIDEO_WITH_NAMES)
-    .neq('status', 'posted')
-    .order('due_on', { ascending: true, nullsFirst: false })
-    .order('created_at', { ascending: true })
-    .returns<VideoWithNames[]>()
-
-  const videos = data ?? []
-  const mine = videos.filter((v) => v.assignee_id === me.id)
-  const others = videos.filter((v) => v.assignee_id !== me.id)
+  const board = await loadBoard(supabase)
+  const plate = plateFor(me, board)
+  const tz = me.timezone
+  const nudge = buildNudge(me, plate, board.openComments, tz)
+  const card = (v: (typeof board.videos)[number], extra: { age?: boolean } = {}) => (
+    <VideoCard
+      key={v.id}
+      video={v}
+      timeZone={tz}
+      openComments={board.openComments[v.id]?.open ?? 0}
+      flagged={board.openComments[v.id]?.flagged ?? false}
+      {...extra}
+    />
+  )
 
   return (
     <>
       <PageBand title="Your list" />
       <main className="mx-auto max-w-2xl space-y-8 px-4 py-6">
-        {me.role === 'lead' && (
-          <Link href="/videos/new" className="btn-primary">
-            + New video
-          </Link>
+        {plate.role === 'lead' && (
+          <>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Link href="/videos/new" className="btn-primary">
+                + New video
+              </Link>
+              <Link href="/shoot-days" className="btn-ghost">
+                + Plan a Shoot Day
+              </Link>
+            </div>
+
+            <Section title="Waiting for your approval" count={plate.approvals.length}>
+              {plate.approvals.map((v) => card(v))}
+            </Section>
+            <Section title="Questions from the editor" count={plate.questions.length}>
+              {plate.questions.map((v) => card(v))}
+            </Section>
+            <Section
+              title="Unscheduled"
+              count={plate.unscheduled.length}
+              tag={<span className="tag tag-salmon">Needs a Shoot Day</span>}
+            >
+              {plate.unscheduled.map((v) => card(v))}
+            </Section>
+            <Section title="Ready to post" count={plate.readyToPost.length}>
+              {plate.readyToPost.map((v) => card(v))}
+            </Section>
+            <Section title="Briefs to write" count={plate.briefs.length}>
+              {plate.briefs.map((v) => card(v))}
+            </Section>
+
+            {plate.approvals.length +
+              plate.questions.length +
+              plate.unscheduled.length +
+              plate.readyToPost.length +
+              plate.briefs.length ===
+              0 && <div className="card text-center text-grey">Nothing waiting on you. Nice.</div>}
+          </>
         )}
 
-        <section>
-          {mine.length === 0 ? (
-            <div className="card text-center text-grey">Nothing on your plate. Nice.</div>
+        {plate.role === 'videographer' && (
+          <>
+            {plate.days.length === 0 ? (
+              <div className="card text-center text-grey">No Shoot Days planned yet.</div>
+            ) : (
+              <DueGroups
+                items={plate.days}
+                due={(d) => d.shoot_date}
+                timeZone={tz}
+                render={(d) => <ShootDayCard key={d.id} day={d} shots={plate.shots[d.id] ?? []} timeZone={tz} />}
+              />
+            )}
+            {plate.days[0] && (
+              <CopyButton
+                text={shootReminder(plate.days[0], plate.shots[plate.days[0].id] ?? [])}
+                label="Copy reminder for the next shoot"
+              />
+            )}
+          </>
+        )}
+
+        {plate.role === 'editor' &&
+          (plate.tasks.length === 0 ? (
+            <div className="card text-center text-grey">Nothing to edit. Nice.</div>
           ) : (
-            <div className="space-y-3">
-              {mine.map((v) => (
-                <VideoCard key={v.id} video={v} timeZone={me.timezone} />
-              ))}
-            </div>
-          )}
-        </section>
+            <DueGroups items={plate.tasks} due={(v) => v.due_on} timeZone={tz} render={(v) => card(v)} />
+          ))}
 
-        {others.length > 0 && (
-          <details className="group">
-            <summary className="label-caps cursor-pointer list-none text-xs text-grey">
-              <span className="group-open:hidden">Show</span>
-              <span className="hidden group-open:inline">Hide</span> what&rsquo;s with the rest of the
-              team ({others.length})
-            </summary>
-            <div className="mt-3 space-y-3">
-              {others.map((v) => (
-                <VideoCard key={v.id} video={v} timeZone={me.timezone} showAssignee />
-              ))}
-            </div>
-          </details>
-        )}
+        <CopyButton text={nudge} label="Copy today's nudge" />
       </main>
     </>
   )

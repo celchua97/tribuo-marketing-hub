@@ -64,3 +64,5 @@ export function friendlyError(message: string) {
   const i = message.indexOf(': ')
   return i > -1 && /^[a-z_]+$/.test(message.slice(0, i)) ? message.slice(i + 2) : message
 }
+
+export const SKIP_REASONS = ['Talent no-show', 'Ran out of time', 'Location unavailable', 'Will reshoot'] as const

@@ -1,18 +1,24 @@
 import Link from 'next/link'
 import { requireLead } from '@/lib/data'
 import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
-import type { Profile } from '@/lib/types'
+import type { Profile, Studio } from '@/lib/types'
+import { loadBoard, plateFor } from '@/lib/board'
+import { buildNudge } from '@/lib/nudge'
+import { MARKET_FLAG } from '@/lib/labels'
+import { CopyButton } from '@/components/copy-button'
 import { ActionForm, SubmitButton } from '@/components/action-form'
 import { PageBand } from '@/components/top-bar'
-import { saveSettings, updatePerson } from '../actions'
+import { addStudio, saveSettings, updatePerson } from '../actions'
 
 type Settings = { edit_due_days: number; approval_due_days: number; revision_due_days: number }
 
 export default async function SettingsPage() {
   const { supabase, me } = await requireLead()
-  const [{ data: settings }, { data: people }] = await Promise.all([
+  const [{ data: settings }, { data: people }, { data: studios }, board] = await Promise.all([
     supabase.from('settings').select('*').single<Settings>(),
     supabase.from('profiles').select('*').eq('active', true).order('created_at').returns<Profile[]>(),
+    supabase.from('studios').select('*').eq('active', true).order('market').order('name').returns<Studio[]>(),
+    loadBoard(supabase),
   ])
 
   const dueFields: { name: keyof Settings; label: string; hint: string }[] = [
@@ -90,9 +96,38 @@ export default async function SettingsPage() {
                   </ActionForm>
                 )}
               </div>
+              <CopyButton
+                className="chip"
+                label={`Copy ${p.full_name.split(' ')[0]}'s nudge`}
+                text={buildNudge(p, plateFor(p, board), board.openComments, p.timezone)}
+              />
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="card space-y-4">
+        <h2 className="label-caps text-xs text-grey">Studios</h2>
+        <ul className="divide-y divide-beige">
+          {(studios ?? []).map((st) => (
+            <li key={st.id} className="flex items-center justify-between py-2.5">
+              <span className="font-bold">{st.name}</span>
+              <span className="text-sm text-grey">
+                {MARKET_FLAG[st.market]} {st.market}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <ActionForm action={addStudio} className="space-y-3">
+          <input name="name" className="field" placeholder="Studio name" required aria-label="Studio name" />
+          <select name="market" className="field" defaultValue="MY" aria-label="Market">
+            <option value="MY">Malaysia</option>
+            <option value="KH">Cambodia</option>
+          </select>
+          <SubmitButton className="btn-ghost" pendingText="Adding…">
+            Add studio
+          </SubmitButton>
+        </ActionForm>
       </section>
       </main>
     </>

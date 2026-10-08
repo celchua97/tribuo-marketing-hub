@@ -140,3 +140,111 @@ export async function updatePerson(_prev: ActionState, formData: FormData): Prom
   })
   return done(error)
 }
+
+// ---------------------------------------------------------------------------
+// Shoot Days
+// ---------------------------------------------------------------------------
+export async function createShootDay(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireLead()
+  const market = text(formData, 'market')
+  const studioId = text(formData, 'studio_id') || null
+  if (market !== 'MY' && market !== 'KH') return { error: 'Pick a market.' }
+  if (!text(formData, 'shoot_date')) return { error: 'Pick a date.' }
+  if (studioId) {
+    const { data: studio } = await supabase.from('studios').select('market').eq('id', studioId).maybeSingle()
+    if (studio && studio.market !== market) return { error: 'That studio is in the other market.' }
+  }
+  const { data, error } = await supabase.rpc('create_shoot_day', {
+    p_actor: me.id,
+    p_date: text(formData, 'shoot_date'),
+    p_market: market,
+    p_studio: studioId,
+    p_videographer: text(formData, 'videographer_id') || null,
+  })
+  if (error) return { error: friendlyError(error.message) }
+  revalidatePath('/', 'layout')
+  redirect(`/shoot-days/${data}`)
+}
+
+export async function attachVideo(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireLead()
+  const { error } = await supabase.rpc('attach_video', {
+    p_actor: me.id,
+    p_video_id: text(formData, 'video_id'),
+    p_day_id: text(formData, 'day_id'),
+  })
+  return done(error)
+}
+
+export async function detachVideo(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireLead()
+  const { error } = await supabase.rpc('detach_video', {
+    p_actor: me.id,
+    p_video_id: text(formData, 'video_id'),
+  })
+  return done(error)
+}
+
+export async function skipShot(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('skip_shot', {
+    p_actor: me.id,
+    p_video_id: text(formData, 'video_id'),
+    p_reason: text(formData, 'reason'),
+  })
+  return done(error)
+}
+
+export async function closeShootDay(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('close_shoot_day', {
+    p_actor: me.id,
+    p_day_id: text(formData, 'day_id'),
+  })
+  return done(error)
+}
+
+export async function saveFootageLink(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('save_footage_link', {
+    p_actor: me.id,
+    p_day_id: text(formData, 'day_id'),
+    p_link: text(formData, 'footage_link'),
+  })
+  return done(error)
+}
+
+export async function addStudio(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  const { supabase, me } = await requireLead()
+  const market = text(formData, 'market')
+  if (market !== 'MY' && market !== 'KH') return { error: 'Pick a market.' }
+  const { error } = await supabase.rpc('add_studio', {
+    p_actor: me.id,
+    p_name: text(formData, 'name'),
+    p_market: market,
+  })
+  return done(error)
+}
+
+// ---------------------------------------------------------------------------
+// Feedback checkboxes (called straight from the checkbox, so not form based)
+// ---------------------------------------------------------------------------
+export async function toggleComment(commentId: string, isDone: boolean): Promise<ActionState> {
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('resolve_comment', {
+    p_actor: me.id,
+    p_comment_id: commentId,
+    p_done: isDone,
+  })
+  return done(error)
+}
+
+export async function flagComment(commentId: string, flag: boolean): Promise<ActionState> {
+  const { supabase, me } = await requireMe()
+  const { error } = await supabase.rpc('flag_comment', {
+    p_actor: me.id,
+    p_comment_id: commentId,
+    p_flag: flag,
+  })
+  return done(error)
+}

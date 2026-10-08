@@ -1,5 +1,5 @@
 import { STATUS_LABEL, STATUS_PILL, MARKET_FLAG, MARKET_NAME } from '@/lib/labels'
-import { dueLabel, dueState } from '@/lib/dates'
+import { ageLabel, ageState, dueLabel, dueState } from '@/lib/dates'
 import type { Market, VideoStatus } from '@/lib/types'
 
 export function StatusPill({ status }: { status: VideoStatus }) {
@@ -26,4 +26,12 @@ export function DueBadge({ dueOn, timeZone }: { dueOn: string | null; timeZone: 
       {label}
     </span>
   )
+}
+
+// How long a video has been waiting for Celine's approval:
+// cream under 24 hours, yellow from 24 to 48, salmon after that.
+export function AgeBadge({ since }: { since: string }) {
+  const age = ageState(since)
+  const style = age === 'fresh' ? 'tag-cream' : age === 'amber' ? 'tag-yellow' : 'tag-salmon'
+  return <span className={`tag ${style}`}>{ageLabel(since)}</span>
 }
