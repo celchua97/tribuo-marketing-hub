@@ -12,8 +12,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // The person remembered on this device, if they're still on the team.
 export const getMe = cache(async () => {
-  const supabase = db()
+  // Read the cookie first: it marks every page as "built when someone visits",
+  // so a deploy never tries to open the database while the site is being built.
   const id = (await cookies()).get(PERSON_COOKIE)?.value
+  const supabase = db()
   if (!id || !UUID.test(id)) return { supabase, me: null }
   const { data } = await supabase
     .from('profiles')

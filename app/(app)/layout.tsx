@@ -4,6 +4,8 @@ import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
 import { TopBar } from '@/components/top-bar'
 import { AdminButton } from '@/components/admin-button'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { me } = await requireMe()
   return (
