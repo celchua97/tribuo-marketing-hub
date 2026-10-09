@@ -6,7 +6,7 @@ import { PERSON_COOKIE } from '@/lib/session'
 export function proxy(request: NextRequest) {
   // The Hub home and the Idea Bank need no board login (the Idea Bank has its own name step).
   const path = request.nextUrl.pathname
-  if (path === '/' || path.startsWith('/who') || path === '/ideas' || path.startsWith('/ideas/')) return NextResponse.next()
+  if (path === '/' || path.startsWith('/who') || path === '/login' || path === '/ideas' || path.startsWith('/ideas/')) return NextResponse.next()
   if (!request.cookies.get(PERSON_COOKIE)) {
     return NextResponse.redirect(new URL('/who', request.url))
   }

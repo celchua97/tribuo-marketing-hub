@@ -10,7 +10,7 @@ import { loadTodos } from '@/lib/todos'
 export const maxDuration = 60
 
 export default async function NewVideoPage() {
-  const { supabase } = await requireLead()
+  const { supabase } = await requireLead('/videos/new')
   const [formData, { sections }] = await Promise.all([loadVideoFormData(supabase), loadTodos(supabase)])
   return (
     <>

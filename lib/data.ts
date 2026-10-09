@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { db } from './supabase/admin'
 import { PERSON_COOKIE } from './session'
+import { getAdminEmail } from './admin-auth'
 import type { Profile } from './types'
 
 export const VIDEO_WITH_NAMES =
@@ -32,8 +33,11 @@ export async function requireMe() {
   return { supabase, me }
 }
 
-export async function requireLead() {
+// Admin things need both: the Head of Marketing name AND a signed-in admin email.
+export async function requireLead(next = '/admin') {
   const ctx = await requireMe()
-  if (ctx.me.role !== 'lead') redirect('/board')
-  return ctx
+  if (ctx.me.role !== 'lead') redirect('/')
+  const email = await getAdminEmail()
+  if (!email) redirect(`/login?next=${encodeURIComponent(next)}`)
+  return { ...ctx, adminEmail: email }
 }

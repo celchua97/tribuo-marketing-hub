@@ -8,21 +8,23 @@ import { IdeaCard } from '@/components/ideas/idea-card'
 import { StatusPicker } from '@/components/ideas/status-picker'
 import { FilterForm } from '@/components/ideas/filter-form'
 import { ExportCard, type ExportRow } from '@/components/ideas/export-card'
+import { envAdminEmails } from '@/lib/admin-auth'
+import { addAdminEmail, removeAdminEmail, signOutAdmin } from './access-actions'
 import { addDepartment, removeDepartment, renameDepartment, setPersonDepartment } from './actions'
 
 type Search = { section?: string; kind?: string; area?: string; department?: string; status?: string }
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams
-  const { supabase } = await requireLead()
-  const section = sp.section === 'people' ? 'people' : 'ideas'
+  const { supabase, adminEmail } = await requireLead('/admin')
+  const section = sp.section === 'people' ? 'people' : sp.section === 'access' ? 'access' : 'ideas'
 
   return (
     <>
       <PageBand title="Admin" nav={false} intro="Everything the team sends in, and who's who." />
       <main className="mx-auto max-w-[760px] space-y-6 px-4 py-6">
         <AdminSwitcher active={section} />
-        {section === 'ideas' ? <Ideas sp={sp} /> : <People supabase={supabase} />}
+        {section === 'ideas' ? <Ideas sp={sp} /> : section === 'people' ? <People supabase={supabase} /> : <Access supabase={supabase} me={adminEmail} />}
       </main>
     </>
   )
@@ -187,6 +189,76 @@ async function People({ supabase }: { supabase: Awaited<ReturnType<typeof requir
           <input name="name" className="field min-w-0 py-2" placeholder="New department" aria-label="New department name" required />
           <SubmitButton className="chip shrink-0" pendingText="…">
             Add
+          </SubmitButton>
+        </ActionForm>
+      </section>
+    </>
+  )
+}
+
+async function Access({ supabase, me }: { supabase: Awaited<ReturnType<typeof requireLead>>['supabase']; me: string }) {
+  const { data } = await supabase
+    .from('admin_emails')
+    .select('email, added_by, created_at')
+    .order('created_at')
+    .returns<{ email: string; added_by: string | null; created_at: string }[]>()
+  const fromVercel = envAdminEmails()
+  const rows = [
+    ...fromVercel.map((email) => ({ email, note: 'Set in Vercel', removable: false })),
+    ...(data ?? [])
+      .filter((r) => !fromVercel.includes(r.email))
+      .map((r) => ({ email: r.email, note: `Added ${formatDate(r.created_at.slice(0, 10))}${r.added_by ? ` by ${r.added_by}` : ''}`, removable: true })),
+  ]
+  return (
+    <>
+      <section className="card space-y-4">
+        <h2 className="label-caps text-xs text-grey">Who can open the admin side</h2>
+        <p className="text-grey">
+          These emails can sign in with a code. Everyone else can use the Hub, the to-dos and the Idea Bank, but not
+          this side.
+        </p>
+        <ul className="divide-y divide-beige">
+          {rows.map((r) => (
+            <li key={r.email} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+              <div className="min-w-0">
+                <p className="truncate font-bold">
+                  {r.email}
+                  {r.email === me && <span className="ml-2 text-sm font-normal text-grey">(you)</span>}
+                </p>
+                <p className="text-sm text-grey">{r.note}</p>
+              </div>
+              {r.removable && r.email !== me && (
+                <ActionForm action={removeAdminEmail} className="">
+                  <input type="hidden" name="email" value={r.email} />
+                  <SubmitButton className="chip shrink-0" pendingText="…">
+                    Remove
+                  </SubmitButton>
+                </ActionForm>
+              )}
+            </li>
+          ))}
+          {rows.length === 0 && <li className="py-2 text-grey">Nobody yet.</li>}
+        </ul>
+      </section>
+
+      <section className="card space-y-3">
+        <h2 className="label-caps text-xs text-grey">Give someone access</h2>
+        <ActionForm action={addAdminEmail} className="flex items-center gap-2">
+          <input name="email" type="email" className="field min-w-0 py-2" placeholder="their@email.com" aria-label="Email to give access" required />
+          <SubmitButton className="chip shrink-0" pendingText="…">
+            Add
+          </SubmitButton>
+        </ActionForm>
+        <p className="text-sm text-grey">They go to the admin page, type this email, and get a code by email. Nothing else to set up.</p>
+      </section>
+
+      <section className="card space-y-3">
+        <p className="text-grey">
+          Signed in as <strong className="text-ink">{me}</strong>.
+        </p>
+        <ActionForm action={signOutAdmin} className="">
+          <SubmitButton className="chip" pendingText="…">
+            Sign out of admin
           </SubmitButton>
         </ActionForm>
       </section>

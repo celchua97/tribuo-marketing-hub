@@ -19,6 +19,22 @@ Built with Next.js, Supabase (Postgres) and Tailwind, and deployed to Vercel. Vi
 | 5 | WhatsApp nudge buttons, "All videos" list | Done |
 | + | Follow up section: who is overdue or quiet, with a nudge ready to copy | Done |
 
+## The Hub overview
+
+The home page (`/`) is a dashboard for whoever has picked a name: tiles for open, overdue and due-today to-dos and videos awaiting approval; **Needs attention** (overdue to-dos, to-dos nobody has, videos waiting or unscheduled, people who have gone quiet); progress bars for each to-do list; the content pipeline counts; open to-dos per person; and recent activity. Below that are links to To-dos, the Idea Bank and Admin.
+
+## Admin sign in
+
+The admin side (Admin pages, Board settings, adding lists and videos) needs two things: the Head of Marketing name, and a signed-in admin email. At `/login` you type your email, Supabase emails you a one-time code, and if the email is on the allowed list you are in for 30 days on that device. **Admin > Access** lets you add and remove allowed emails. Removing one locks that person out straight away.
+
+Setup, once:
+
+1. Run `supabase/migrations/0008_admin_access.sql`, then add your own email: `insert into admin_emails (email) values ('you@example.com');` (or set `ADMIN_EMAILS` in Vercel, comma separated, which always works and cannot be removed from the page).
+2. In Supabase open **Authentication > Emails** (Email Templates) and edit both **Confirm sign up** and **Magic Link** so the body contains `Your code is {{ .Token }}`. The code is what people type in.
+3. Supabase's built-in email sender is limited to a few emails an hour, which is plenty for admin sign-ins. For more, add your own SMTP provider under Authentication > Emails.
+
+Everything else (the Hub, to-dos, the Idea Bank) stays open to anyone with the link and a name.
+
 ## The Hub
 
 The site is one app with a menu that slides in from the left: swipe right (start anywhere in the left part of the screen) or tap the menu button. On a laptop or desktop with a mouse it stays out of sight until you move the pointer to the left edge, then slides over the page (nothing jumps) and tucks away when you leave. Keyboard users can Tab to the menu button. It lists the **Content workflow board** (Your list, Shoot days, All videos), the **Idea Bank** (Submit, Your submissions) and, for the Head of Marketing, **Admin**. The home page (`/`) shows each tool with a one-line summary of what needs you. People can add it to their phone's home screen and it opens full screen like an app.
@@ -105,6 +121,7 @@ To add a person later (for example, a Cambodia videographer), have them add them
    6. `supabase/migrations/0005_idea_bank.sql`
    7. `supabase/migrations/0006_todos.sql`
    8. `supabase/migrations/0007_todos_basecamp.sql`
+   9. `supabase/migrations/0008_admin_access.sql`
 3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
 ### 2. Vercel

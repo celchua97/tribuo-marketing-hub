@@ -13,7 +13,7 @@ import { addStudio, saveSettings, updatePerson } from '../actions'
 type Settings = { edit_due_days: number; approval_due_days: number; revision_due_days: number }
 
 export default async function SettingsPage() {
-  const { supabase, me } = await requireLead()
+  const { supabase, me } = await requireLead('/settings')
   const [{ data: settings }, { data: people }, { data: studios }, board] = await Promise.all([
     supabase.from('settings').select('*').single<Settings>(),
     supabase.from('profiles').select('*').eq('active', true).order('created_at').returns<Profile[]>(),
