@@ -186,6 +186,7 @@ export default async function HubHome() {
                 {attention.length === 0 && o.videos.followUps.length === 0 && o.todo.unassigned === 0 && o.videos.approvals === 0 ? (
                   <p className="text-grey">Nothing needs chasing right now.</p>
                 ) : (
+                  attention.length > 0 && (
                   <div className="overflow-x-auto">
                     <table className="w-full min-w-[520px] text-left text-sm">
                       <thead>
@@ -210,6 +211,7 @@ export default async function HubHome() {
                       </tbody>
                     </table>
                   </div>
+                  )
                 )}
                 <ul className="mt-3 space-y-1.5 text-sm">
                   {attention.length > 6 && <li className="text-grey">and {attention.length - 6} more overdue</li>}
