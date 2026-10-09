@@ -13,15 +13,6 @@ const prefix = (href: string) => (p: string) => p === href || p.startsWith(href 
 const HOME: Item = { href: '/', label: 'Hub home', active: exact('/') }
 const GROUPS: { title: string; blurb: string; items: Item[] }[] = [
   {
-    title: 'Content workflow board',
-    blurb: 'Marketing content progress: shoots, edits, approvals',
-    items: [
-      { href: '/board', label: 'Your list', active: (p) => p === '/board' || p.startsWith('/videos/') },
-      { href: '/shoot-days', label: 'Shoot days', active: prefix('/shoot-days') },
-      { href: '/videos', label: 'All videos', active: exact('/videos') },
-    ],
-  },
-  {
     title: 'To-do board',
     blurb: 'To-dos by section. Drag them anywhere',
     items: [{ href: '/todos', label: 'All sections', active: exact('/todos') }],

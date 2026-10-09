@@ -1,10 +1,7 @@
 import Link from 'next/link'
 import { getMe } from '@/lib/data'
 import { getIdeaPerson } from '@/lib/ideas'
-import { loadBoard, plateFor } from '@/lib/board'
-import { dueState } from '@/lib/dates'
 import { db } from '@/lib/supabase/admin'
-import type { Profile } from '@/lib/types'
 import { AdminButton } from '@/components/admin-button'
 import { PageBand, TopBar } from '@/components/top-bar'
 import { ROLE_LABEL } from '@/lib/labels'
@@ -13,27 +10,6 @@ export const dynamic = 'force-dynamic'
 
 type Tag = { text: string; tone: 'yellow' | 'salmon' | 'cream' | 'blue' }
 const TONE = { yellow: 'tag-yellow', salmon: 'tag-salmon', cream: 'tag-cream', blue: 'tag-blue' }
-
-function boardTags(me: Profile, board: Awaited<ReturnType<typeof loadBoard>>): Tag[] {
-  const plate = plateFor(me, board)
-  const tz = me.timezone
-  const tags: Tag[] = []
-  if (plate.role === 'lead') {
-    if (plate.approvals.length) tags.push({ text: `${plate.approvals.length} waiting for your approval`, tone: 'yellow' })
-    if (plate.followUps.length) tags.push({ text: `${plate.followUps.length} to follow up`, tone: 'salmon' })
-    if (plate.unscheduled.length) tags.push({ text: `${plate.unscheduled.length} unscheduled`, tone: 'salmon' })
-  } else if (plate.role === 'videographer') {
-    const shots = Object.values(plate.shots).reduce((n, s) => n + s.length, 0)
-    const late = plate.days.filter((d) => dueState(d.shoot_date, tz) === 'overdue').length
-    if (shots) tags.push({ text: `${shots} shot${shots === 1 ? '' : 's'} to do`, tone: 'yellow' })
-    if (late) tags.push({ text: `${late} shoot day${late === 1 ? '' : 's'} overdue`, tone: 'salmon' })
-  } else {
-    const late = plate.tasks.filter((v) => dueState(v.due_on, tz) === 'overdue').length
-    if (plate.tasks.length) tags.push({ text: `${plate.tasks.length} to edit`, tone: 'yellow' })
-    if (late) tags.push({ text: `${late} overdue`, tone: 'salmon' })
-  }
-  return tags.length ? tags : [{ text: 'All clear', tone: 'cream' }]
-}
 
 function ToolCard({ href, title, blurb, tags }: { href: string; title: string; blurb: string; tags: Tag[] }) {
   return (
@@ -61,8 +37,7 @@ export default async function HubHome() {
   const ideaPerson = await getIdeaPerson()
   const isAdmin = me?.role === 'lead'
 
-  const [board, mine, newIdeas, openTodos] = await Promise.all([
-    me ? loadBoard(supabase) : null,
+  const [mine, newIdeas, openTodos] = await Promise.all([
     ideaPerson
       ? supabase.from('idea_submissions').select('id', { count: 'exact', head: true }).eq('person_id', ideaPerson.id)
       : null,
@@ -72,7 +47,6 @@ export default async function HubHome() {
     me ? supabase.from('todo_items').select('id', { count: 'exact', head: true }).eq('done', false) : null,
   ])
 
-  const boardTagList: Tag[] = me && board ? boardTags(me, board) : [{ text: 'Pick your name to start', tone: 'cream' }]
   const todoTags: Tag[] = me
     ? [{ text: `${openTodos?.count ?? 0} open`, tone: (openTodos?.count ?? 0) > 0 ? 'yellow' : 'cream' }]
     : [{ text: 'Pick your name to start', tone: 'cream' }]
@@ -91,12 +65,6 @@ export default async function HubHome() {
       </TopBar>
       <PageBand title="Tribuo Hub" intro="Your marketing tools in one place. Pick one to get going." nav={false} />
       <main className="mx-auto max-w-[760px] space-y-4 px-4 py-6">
-        <ToolCard
-          href="/board"
-          title="Marketing content workflow progress board"
-          blurb="See what has been shot, edited and approved, and who needs a nudge."
-          tags={boardTagList}
-        />
         <ToolCard
           href="/todos"
           title="To-do board"
