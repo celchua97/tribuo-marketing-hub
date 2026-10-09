@@ -1853,7 +1853,7 @@ alter table public.todo_items add column if not exists due_on date;
 -- Lists (Head of Marketing)
 -- ---------------------------------------------------------------------------
 drop function if exists public.todo_add_section(uuid, text);
-create function public.todo_add_section(p_actor uuid, p_name text, p_description text default null) returns uuid
+create or replace function public.todo_add_section(p_actor uuid, p_name text, p_description text default null) returns uuid
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
