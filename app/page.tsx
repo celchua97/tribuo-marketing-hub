@@ -9,7 +9,6 @@ import { STATUS_LABEL } from '@/lib/labels'
 import { BarChart, Donut, LineChart, PALETTE } from '@/components/dashboard/charts'
 import { AdminButton } from '@/components/admin-button'
 import { PageBand, TopBar } from '@/components/top-bar'
-import { ROLE_LABEL } from '@/lib/labels'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,7 +88,6 @@ export default async function HubHome() {
               <span aria-hidden className="flex size-9 items-center justify-center rounded-full bg-coral text-sm font-extrabold">{initials(me.full_name)}</span>
               <span className="leading-tight">
                 <span className="block text-sm font-bold">{me.full_name}</span>
-                <span className="block text-xs text-grey">{ROLE_LABEL[me.role]}</span>
               </span>
             </div>
           )}

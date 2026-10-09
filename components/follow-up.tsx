@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { agoLabel, dueLabel, formatWeekday } from '@/lib/dates'
-import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
+import { ROLE_COLOR } from '@/lib/labels'
 import type { FollowUp } from '@/lib/board'
 import type { Profile } from '@/lib/types'
 import { CopyButton } from './copy-button'
@@ -43,7 +43,6 @@ export function FollowUpSection({
               <div className="flex items-center gap-2">
                 <span className={`size-3 shrink-0 rounded-full ${ROLE_COLOR[f.person.role].dot}`} />
                 <span className="title text-xl">{f.person.full_name}</span>
-                <span className="label-caps text-[10px] text-grey">{ROLE_LABEL[f.person.role]}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 {late > 0 && <span className="tag tag-salmon">{late} overdue</span>}

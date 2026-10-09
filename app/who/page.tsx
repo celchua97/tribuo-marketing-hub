@@ -1,5 +1,5 @@
 import { db } from '@/lib/supabase/admin'
-import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
+import { ROLE_COLOR } from '@/lib/labels'
 import type { Profile } from '@/lib/types'
 import { ActionForm, SubmitButton } from '@/components/action-form'
 import { PageBand, TopBar } from '@/components/top-bar'
@@ -33,7 +33,6 @@ export default async function WhoPage() {
                 <SubmitButton className="btn-ghost justify-start !px-5" pendingText="One moment…">
                   <span className={`size-5 shrink-0 rounded-full ${ROLE_COLOR[p.role].dot}`} />
                   <span>{p.full_name}</span>
-                  <span className="ml-auto text-sm font-normal text-grey">{ROLE_LABEL[p.role]}</span>
                 </SubmitButton>
               </ActionForm>
             ))}
@@ -58,7 +57,7 @@ export default async function WhoPage() {
                   <input type="radio" name="role" value={r} required defaultChecked={i === 0 && colours.length === 1} className="peer sr-only" />
                   <span className="flex min-h-14 items-center gap-3 rounded-full border-2 border-beige bg-transparent px-5 peer-checked:border-ink peer-focus-visible:ring-2 peer-focus-visible:ring-blue">
                     <span className={`size-6 shrink-0 rounded-full ${ROLE_COLOR[r].dot}`} />
-                    <span className="font-bold">{ROLE_LABEL[r]}</span>
+                    <span className="font-bold">{ROLE_COLOR[r].name}</span>
                   </span>
                 </label>
               ))}

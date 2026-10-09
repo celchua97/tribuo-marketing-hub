@@ -1,5 +1,5 @@
 import { requireLead } from '@/lib/data'
-import { ROLE_COLOR, ROLE_LABEL } from '@/lib/labels'
+import { ROLE_COLOR } from '@/lib/labels'
 import type { Profile, Studio } from '@/lib/types'
 import { loadBoard, plateFor } from '@/lib/board'
 import { buildNudge } from '@/lib/nudge'
@@ -69,7 +69,6 @@ export default async function SettingsPage() {
               <p className="flex items-center gap-2 font-bold">
                 <span className={`size-3 rounded-full ${ROLE_COLOR[p.role].dot}`} />
                 {p.full_name}
-                <span className="text-sm font-normal text-grey">{ROLE_LABEL[p.role]}</span>
               </p>
               <div className="flex items-center gap-2">
                 <ActionForm action={updatePerson} className="flex flex-1 items-center gap-2">
