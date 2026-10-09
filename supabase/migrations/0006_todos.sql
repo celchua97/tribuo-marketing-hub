@@ -1,20 +1,21 @@
 -- To-do board: sections with to-dos under each, Basecamp style.
 -- Anyone on the board team can add, tick, edit, delete and drag to-dos.
 -- Only the Head of Marketing can add, rename or delete sections.
--- Run after 0001 to 0005. Safe to run once.
+-- Run after 0001 to 0005. Safe to run more than once.
 
-create table public.todo_sections (
+create table if not exists public.todo_sections (
   id uuid primary key default gen_random_uuid(),
   name text not null check (btrim(name) <> '' and length(name) <= 60),
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
-create unique index todo_sections_name_idx on public.todo_sections (lower(name));
+create unique index if not exists todo_sections_name_idx on public.todo_sections (lower(name));
 
-insert into public.todo_sections (name, sort_order) values
-  ('Tribuo Marketing', 1), ('Videography', 2), ('Content Strategy', 3);
+insert into public.todo_sections (name, sort_order)
+select v.name, v.n from (values ('Tribuo Marketing', 1), ('Videography', 2), ('Content Strategy', 3)) as v(name, n)
+where not exists (select 1 from public.todo_sections);
 
-create table public.todo_items (
+create table if not exists public.todo_items (
   id uuid primary key default gen_random_uuid(),
   section_id uuid not null references public.todo_sections (id) on delete cascade,
   title text not null check (btrim(title) <> '' and length(title) <= 200),
@@ -26,13 +27,13 @@ create table public.todo_items (
   created_by uuid references public.profiles (id) on delete set null,
   created_at timestamptz not null default now()
 );
-create index todo_items_section_idx on public.todo_items (section_id, done, position);
+create index if not exists todo_items_section_idx on public.todo_items (section_id, done, position);
 
 alter table public.todo_sections enable row level security;
 alter table public.todo_items enable row level security;
 
 -- Two titles are "the same" if they match ignoring case, spacing and punctuation.
-create function public.todo_key(t text) returns text
+create or replace function public.todo_key(t text) returns text
 language sql immutable as $$
   select lower(btrim(regexp_replace(coalesce(t, ''), '[[:space:][:punct:]]+', ' ', 'g')))
 $$;
@@ -40,7 +41,7 @@ $$;
 -- ---------------------------------------------------------------------------
 -- Sections (Head of Marketing)
 -- ---------------------------------------------------------------------------
-create function public.todo_add_section(p_actor uuid, p_name text) returns uuid
+create or replace function public.todo_add_section(p_actor uuid, p_name text) returns uuid
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
@@ -65,7 +66,7 @@ begin
   return new_id;
 end $$;
 
-create function public.todo_rename_section(p_actor uuid, p_id uuid, p_name text) returns void
+create or replace function public.todo_rename_section(p_actor uuid, p_id uuid, p_name text) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
@@ -83,7 +84,7 @@ begin
   update todo_sections set name = p_name where id = p_id;
 end $$;
 
-create function public.todo_delete_section(p_actor uuid, p_id uuid) returns void
+create or replace function public.todo_delete_section(p_actor uuid, p_id uuid) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
@@ -101,7 +102,7 @@ end $$;
 -- To-dos (anyone on the team)
 -- ---------------------------------------------------------------------------
 -- Adds titles to the end of a section. Titles already in that section are skipped.
-create function public.todo_add_items(p_actor uuid, p_section uuid, p_titles text[], p_link text)
+create or replace function public.todo_add_items(p_actor uuid, p_section uuid, p_titles text[], p_link text)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
@@ -138,7 +139,7 @@ begin
   return jsonb_build_object('added', added, 'skipped', skipped);
 end $$;
 
-create function public.todo_set_done(p_actor uuid, p_id uuid, p_done boolean) returns void
+create or replace function public.todo_set_done(p_actor uuid, p_id uuid, p_done boolean) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
@@ -154,7 +155,7 @@ begin
   end if;
 end $$;
 
-create function public.todo_edit_item(p_actor uuid, p_id uuid, p_title text) returns void
+create or replace function public.todo_edit_item(p_actor uuid, p_id uuid, p_title text) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
@@ -169,7 +170,7 @@ begin
   end if;
 end $$;
 
-create function public.todo_delete_item(p_actor uuid, p_id uuid) returns void
+create or replace function public.todo_delete_item(p_actor uuid, p_id uuid) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);
@@ -186,7 +187,7 @@ begin
 end $$;
 
 -- Drag and drop: put a to-do in a section at a spot (0 = top) among that section's open to-dos.
-create function public.todo_move_item(p_actor uuid, p_id uuid, p_section uuid, p_index int) returns void
+create or replace function public.todo_move_item(p_actor uuid, p_id uuid, p_section uuid, p_index int) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   a profiles := act_as(p_actor);

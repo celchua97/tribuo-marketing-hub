@@ -127,7 +127,7 @@ To add a person later (for example, a Cambodia videographer), have them add them
    10. `supabase/migrations/0009_idea_bank_public.sql`
 3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
-If the site ever says it "could not find the function", the database is behind the site. Run `supabase/catch-up-0007-0009.sql` in the SQL Editor (it keeps your data and is safe to repeat).
+If the site ever says it "could not find the function", the database is behind the site. Run `supabase/catch-up-0006-0009.sql` in the SQL Editor (it keeps your data and is safe to repeat).
 
 ### 2. Vercel
 

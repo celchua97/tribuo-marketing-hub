@@ -11,7 +11,7 @@ drop function if exists public.idea_dept_rename(uuid, uuid, text);
 drop function if exists public.idea_dept_remove(uuid, uuid);
 drop function if exists public.idea_submit(uuid, text, text, text, text, jsonb);
 
-alter table public.idea_submissions drop column if exists person_id;
+alter table if exists public.idea_submissions drop column if exists person_id;
 drop table if exists public.idea_people cascade;
 drop table if exists public.idea_departments cascade;
 

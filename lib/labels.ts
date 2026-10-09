@@ -62,7 +62,7 @@ export function eventText(kind: string, to: VideoStatus | null, payload: Record<
 // Database errors come back as "code: message". Show only the friendly part.
 export function friendlyError(message: string) {
   if (/schema cache|could not find the function|does not exist/i.test(message)) {
-    return 'The site is newer than the database. Open Supabase, run supabase/catch-up-0007-0009.sql in the SQL Editor, then try again.'
+    return 'The site is newer than the database. Open Supabase, run supabase/catch-up-0006-0009.sql in the SQL Editor, then try again.'
   }
   const i = message.indexOf(': ')
   return i > -1 && /^[a-z_]+$/.test(message.slice(0, i)) ? message.slice(i + 2) : message
