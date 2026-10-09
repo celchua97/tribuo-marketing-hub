@@ -15,6 +15,9 @@ export const ADMIN_COOKIE_OPTIONS = {
   maxAge: MAX_AGE,
 }
 
+// The platform owner. Always allowed in, and the only kind of admin who can give or take away access.
+const OWNERS = ['celine.chuayq@gmail.com']
+
 export function normaliseEmail(raw: string) {
   return raw.trim().toLowerCase()
 }
@@ -46,10 +49,17 @@ export function envAdminEmails() {
     .filter(Boolean)
 }
 
+export function ownerEmails() {
+  const extra = (process.env.OWNER_EMAILS ?? '').split(',').map(normaliseEmail).filter(Boolean)
+  return [...new Set([...OWNERS, ...extra, ...envAdminEmails()])]
+}
+
+export const isOwner = (email: string | null) => !!email && ownerEmails().includes(normaliseEmail(email))
+
 export async function isAllowedAdmin(email: string) {
   const e = normaliseEmail(email)
   if (!e) return false
-  if (envAdminEmails().includes(e)) return true
+  if (isOwner(e)) return true
   const { data } = await db().from('admin_emails').select('email').eq('email', e).maybeSingle()
   return !!data
 }

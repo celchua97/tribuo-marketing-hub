@@ -25,7 +25,7 @@ The home page (`/`) is a dashboard for whoever has picked a name: tiles for open
 
 ## Admin sign in
 
-The admin side (Admin pages, Board settings, adding lists and videos) needs two things: the Head of Marketing name, and a signed-in admin email. At `/login` you type your email, Supabase emails you a one-time code, and if the email is on the allowed list you are in for 30 days on that device. **Admin > Access** lets you add and remove allowed emails. Removing one locks that person out straight away.
+The admin side (Admin pages, Board settings, adding lists and videos) needs two things: the Head of Marketing name, and a signed-in admin email. At `/login` you type your email, Supabase emails you a one-time code, and if the email is on the allowed list you are in for 30 days on that device. **Admin > Access** lets the owner add and remove allowed emails. The owner is `celine.chuayq@gmail.com` (set in `lib/admin-auth.ts`), plus anything in `ADMIN_EMAILS` or `OWNER_EMAILS` in Vercel. Other admins can use the admin side but cannot change who has access. Removing one locks that person out straight away.
 
 Setup, once:
 

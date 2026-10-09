@@ -8,7 +8,7 @@ import { IdeaCard } from '@/components/ideas/idea-card'
 import { StatusPicker } from '@/components/ideas/status-picker'
 import { FilterForm } from '@/components/ideas/filter-form'
 import { ExportCard, type ExportRow } from '@/components/ideas/export-card'
-import { envAdminEmails } from '@/lib/admin-auth'
+import { isOwner, ownerEmails } from '@/lib/admin-auth'
 import { addAdminEmail, removeAdminEmail, signOutAdmin } from './access-actions'
 import { addDepartment, removeDepartment, renameDepartment, setPersonDepartment } from './actions'
 
@@ -202,11 +202,12 @@ async function Access({ supabase, me }: { supabase: Awaited<ReturnType<typeof re
     .select('email, added_by, created_at')
     .order('created_at')
     .returns<{ email: string; added_by: string | null; created_at: string }[]>()
-  const fromVercel = envAdminEmails()
+  const owners = ownerEmails()
+  const iAmOwner = isOwner(me)
   const rows = [
-    ...fromVercel.map((email) => ({ email, note: 'Set in Vercel', removable: false })),
+    ...owners.map((email) => ({ email, note: 'Owner. Can give and take away access.', removable: false })),
     ...(data ?? [])
-      .filter((r) => !fromVercel.includes(r.email))
+      .filter((r) => !owners.includes(r.email))
       .map((r) => ({ email: r.email, note: `Added ${formatDate(r.created_at.slice(0, 10))}${r.added_by ? ` by ${r.added_by}` : ''}`, removable: true })),
   ]
   return (
@@ -227,7 +228,7 @@ async function Access({ supabase, me }: { supabase: Awaited<ReturnType<typeof re
                 </p>
                 <p className="text-sm text-grey">{r.note}</p>
               </div>
-              {r.removable && r.email !== me && (
+              {iAmOwner && r.removable && r.email !== me && (
                 <ActionForm action={removeAdminEmail} className="">
                   <input type="hidden" name="email" value={r.email} />
                   <SubmitButton className="chip shrink-0" pendingText="…">
@@ -241,6 +242,7 @@ async function Access({ supabase, me }: { supabase: Awaited<ReturnType<typeof re
         </ul>
       </section>
 
+      {iAmOwner ? (
       <section className="card space-y-3">
         <h2 className="label-caps text-xs text-grey">Give someone access</h2>
         <ActionForm action={addAdminEmail} className="flex items-center gap-2">
@@ -251,6 +253,10 @@ async function Access({ supabase, me }: { supabase: Awaited<ReturnType<typeof re
         </ActionForm>
         <p className="text-sm text-grey">They go to the admin page, type this email, and get a code by email. Nothing else to set up.</p>
       </section>
+
+      ) : (
+        <p className="px-1 text-sm text-grey">Only the owner can give or take away access.</p>
+      )}
 
       <section className="card space-y-3">
         <p className="text-grey">
