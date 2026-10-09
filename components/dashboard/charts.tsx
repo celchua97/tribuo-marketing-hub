@@ -39,15 +39,17 @@ export function LineChart({ points, label }: { points: { label: string; value: n
       <path d={path} fill="none" stroke={BLUE} strokeWidth="2.5" strokeLinecap="round" />
       {pts.map(([px, py], i) => (
         <g key={i}>
-          <circle cx={px} cy={py} r="4.5" fill="#fff" stroke={BLUE} strokeWidth="2.5" />
-          {points[i].value > 0 && (
+          <circle cx={px} cy={py} r={points.length > 14 ? 0 : 4.5} fill="#fff" stroke={BLUE} strokeWidth="2.5" />
+          {points.length <= 14 && points[i].value > 0 && (
             <text x={px} y={py - 11} textAnchor="middle" fontSize="11" fontWeight="700" fill="#050505">
               {points[i].value}
             </text>
           )}
-          <text x={px} y={H - 9} textAnchor="middle" fontSize="11" fill="#5e5a52">
-            {points[i].label}
-          </text>
+          {i % Math.ceil(points.length / 7) === 0 && (
+            <text x={px} y={H - 9} textAnchor="middle" fontSize="11" fill="#5e5a52">
+              {points[i].label}
+            </text>
+          )}
         </g>
       ))}
     </svg>

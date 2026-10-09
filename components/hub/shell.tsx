@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, Lightbulb, ListChecks, ShieldCheck } from 'lucide-react'
+import { BarChart3, LayoutDashboard, Lightbulb, ListChecks, ShieldCheck } from 'lucide-react'
 import { Logo } from '../logo'
 
 type Item = { href: string; label: string; icon: React.ReactNode; active: (p: string) => boolean }
@@ -12,6 +12,7 @@ const ITEMS: Item[] = [
   { href: '/todos', label: 'To-dos', active: (p) => p.startsWith('/todos'), icon: <ListChecks className="size-5 shrink-0" aria-hidden /> },
   { href: '/ideas', label: 'Idea Bank', active: (p) => p.startsWith('/ideas'), icon: <Lightbulb className="size-5 shrink-0" aria-hidden /> },
 ]
+const MARKETING: Item = { href: '/marketing', label: 'Marketing', active: (p) => p.startsWith('/marketing'), icon: <BarChart3 className="size-5 shrink-0" aria-hidden /> }
 const ADMIN: Item = {
   href: '/admin',
   label: 'Admin',
@@ -25,7 +26,7 @@ export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: stri
   if (path.startsWith('/who') || path === '/login') return <>{children}</>
   // The public Idea Bank link is for anyone, so it shows no team menu to people without a name
   if (path.startsWith('/ideas') && !who) return <>{children}</>
-  const items = isAdmin ? [...ITEMS, ADMIN] : ITEMS
+  const items = isAdmin ? [...ITEMS, MARKETING, ADMIN] : ITEMS
 
   return (
     <div className="has-sidebar pb-20 lg:pb-0 lg:pl-60">
@@ -62,7 +63,7 @@ export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: stri
       {children}
 
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 border-t border-beige bg-white pb-[env(safe-area-inset-bottom)] lg:hidden">
-        <ul className={`mx-auto grid max-w-md ${items.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
+        <ul className={`mx-auto grid max-w-md ${items.length === 5 ? 'grid-cols-5' : items.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>
           {items.map((i) => {
             const on = i.active(path)
             return (

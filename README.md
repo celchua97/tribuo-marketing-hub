@@ -38,6 +38,21 @@ If email codes do not arrive, set `ADMIN_PASSCODE` in Vercel (12 or more charact
 
 Everything else (the Hub, to-dos, the Idea Bank) stays open to anyone with the link and a name.
 
+## Meta ads dashboard
+
+`/marketing` (admin only, in the sidebar) shows leads performance from the Meta Marketing API: leads, cost per lead, spend and link click rate with a comparison to the period before, leads per day, leads by campaign, and a table of every campaign. Pick 7, 14, 30 or 90 days. Numbers are fetched live from Meta, cached for 5 minutes, and **Refresh now** clears the cache.
+
+A lead is a form lead (counted once even though Meta reports it under several names) plus WhatsApp or Messenger conversations started. Change what counts with `META_LEAD_ACTIONS` (comma separated Meta action types).
+
+Setup, once:
+
+1. In Meta Business Settings open **Users > System users** and add a system user.
+2. Assign it the **Tribuo x Malaysia** ad account with **View performance**.
+3. **Generate token**, tick only `ads_read`, and copy it.
+4. In Vercel add `META_ACCESS_TOKEN` with that token (and `META_AD_ACCOUNT_ID` only if you want a different ad account; it defaults to `704483032098939`, Tribuo x Malaysia). Redeploy.
+
+The token is only ever used on the server. If Meta rejects it, the page shows Meta's message.
+
 ## The Hub
 
 The site is one app with a fixed sidebar on laptops (Dashboard, To-dos, Idea Bank, and Admin for the Head of Marketing) and a tab bar along the bottom on phones. Nothing hides or slides. People can add it to their phone's home screen and it opens full screen like an app.
