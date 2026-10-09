@@ -30,8 +30,9 @@ The admin side (Admin pages, Board settings, adding lists and videos) needs two 
 Setup, once:
 
 1. Run `supabase/migrations/0008_admin_access.sql`, then add your own email: `insert into admin_emails (email) values ('you@example.com');` (or set `ADMIN_EMAILS` in Vercel, comma separated, which always works and cannot be removed from the page).
-2. In Supabase open **Authentication > Emails** (Email Templates) and edit both **Confirm sign up** and **Magic Link** so the body contains `Your code is {{ .Token }}`. The code is what people type in.
-3. Supabase's built-in email sender is limited to a few emails an hour, which is plenty for admin sign-ins. For more, add your own SMTP provider under Authentication > Emails.
+2. In Supabase open **Authentication > URL Configuration** and set **Site URL** to your live site address (for example `https://tribuo-marketing-hub.vercel.app`), not localhost. The link in the sign-in email lands there and signs you in.
+3. Optional, for a typed code instead of a link: in **Authentication > Emails** (Email Templates) and edit both **Confirm sign up** and **Magic Link** so the body contains `Your code is {{ .Token }}`. The code is what people type in.
+4. Supabase's built-in email sender is limited to a few emails an hour, which is plenty for admin sign-ins. For more, add your own SMTP provider under Authentication > Emails.
 
 If email codes do not arrive, set `ADMIN_PASSCODE` in Vercel (12 or more characters). The sign-in page then shows "No email? Use the backup passcode". The email must still be on the admin list. Sign-in errors from Supabase are shown on the page, which says why an email did not send.
 

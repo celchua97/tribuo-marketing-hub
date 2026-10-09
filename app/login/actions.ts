@@ -61,6 +61,17 @@ export async function signInWithPasscode(rawEmail: string, pass: string, next: s
   redirect(safeNext(next))
 }
 
+// The link in the sign-in email lands on the site with a token after the #. If it belongs
+// to an email on the admin list, that is a valid sign in too.
+export async function signInWithToken(token: string): Promise<{ ok?: boolean; error?: string }> {
+  if (!token || token.length > 4000) return { error: 'That link did not work.' }
+  const { data, error } = await auth().getUser(token)
+  const email = data?.user?.email ? normaliseEmail(data.user.email) : ''
+  if (error || !email || !(await isAllowedAdmin(email))) return { error: 'That link did not work. Ask for a new one.' }
+  ;(await cookies()).set(ADMIN_COOKIE, signAdminCookie(email), ADMIN_COOKIE_OPTIONS)
+  return { ok: true }
+}
+
 export async function signOut() {
   ;(await cookies()).delete(ADMIN_COOKIE)
   redirect('/')

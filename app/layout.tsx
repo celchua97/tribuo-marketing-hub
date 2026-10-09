@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { getMe } from '@/lib/data'
+import { AuthHashHandler } from '@/components/auth-hash-handler'
 import { Shell } from '@/components/hub/shell'
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body>
+        <AuthHashHandler />
         <Shell isAdmin={me?.role === 'lead'} who={me?.full_name}>
           {children}
         </Shell>
