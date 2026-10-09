@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { loadBoard, plateFor, type FollowUp } from './board'
-import { dueState, todayIn } from './dates'
+import { addDays, dueState, todayIn } from './dates'
 import type { Profile, VideoStatus, VideoWithNames } from './types'
 
 type TodoRow = {
@@ -10,6 +10,7 @@ type TodoRow = {
   done: boolean
   done_at: string | null
   due_on: string | null
+  created_at: string
   assignee_id: string | null
   assignee: { full_name: string } | null
   done_by_profile: { full_name: string } | null
@@ -33,7 +34,7 @@ export async function loadOverview(supabase: SupabaseClient, me: Profile) {
     supabase
       .from('todo_items')
       .select(
-        'id, section_id, title, done, done_at, due_on, assignee_id, assignee:profiles!todo_items_assignee_id_fkey(full_name), done_by_profile:profiles!todo_items_done_by_fkey(full_name)',
+        'id, section_id, title, done, done_at, due_on, created_at, assignee_id, assignee:profiles!todo_items_assignee_id_fkey(full_name), done_by_profile:profiles!todo_items_done_by_fkey(full_name)',
       )
       .returns<TodoRow[]>(),
     loadBoard(supabase),
@@ -82,6 +83,29 @@ export async function loadOverview(supabase: SupabaseClient, me: Profile) {
   ).map((status) => ({ status, count: board.videos.filter((v: VideoWithNames) => v.status === status).length }))
   const overdueVideos = board.videos.filter((v) => dueState(v.due_on, tz) === 'overdue')
 
+  // The last 7 days of ticks, against the 7 before, for the trend line
+  const today = todayIn(tz)
+  const dayOf = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: tz }).format(new Date(iso))
+  const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13))
+  const ticksOn: Record<string, number> = {}
+  const addedOn: Record<string, number> = {}
+  for (const i of items) {
+    if (i.done && i.done_at) ticksOn[dayOf(i.done_at)] = (ticksOn[dayOf(i.done_at)] ?? 0) + 1
+    addedOn[dayOf(i.created_at)] = (addedOn[dayOf(i.created_at)] ?? 0) + 1
+  }
+  const weekday = (d: string) => {
+    const [y, m, dd] = d.split('-').map(Number)
+    return new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(y, m - 1, dd)))
+  }
+  const thisWeek = days.slice(7)
+  const sum = (ds: string[], m: Record<string, number>) => ds.reduce((n, d) => n + (m[d] ?? 0), 0)
+  const trend = {
+    points: thisWeek.map((d) => ({ label: weekday(d), value: ticksOn[d] ?? 0 })),
+    doneThisWeek: sum(thisWeek, ticksOn),
+    doneLastWeek: sum(days.slice(0, 7), ticksOn),
+    addedThisWeek: sum(thisWeek, addedOn),
+  }
+
   const activity: Activity[] = [
     ...items
       .filter((i) => i.done && i.done_at)
@@ -97,7 +121,8 @@ export async function loadOverview(supabase: SupabaseClient, me: Profile) {
     .slice(0, 8)
 
   return {
-    today: todayIn(tz),
+    today,
+    trend,
     todo: {
       open: open.length,
       overdue: overdue.map((i) => ({ id: i.id, title: i.title, due: i.due_on as string, who: i.assignee?.full_name ?? null, list: listName[i.section_id] ?? '' })),
