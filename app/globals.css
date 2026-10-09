@@ -124,3 +124,32 @@
     animation: none;
   }
 }
+
+/* The browser's own surfaces, themed */
+::selection {
+  background: #f9c339;
+  color: #050505;
+}
+:where(a, button, summary, [role='button'], input[type='checkbox'], input[type='radio']):focus-visible {
+  outline: 2px solid #3750ab;
+  outline-offset: 2px;
+}
+.tabular,
+table,
+td,
+th {
+  font-variant-numeric: tabular-nums;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+a {
+  text-underline-offset: 3px;
+}
+.chip:disabled,
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

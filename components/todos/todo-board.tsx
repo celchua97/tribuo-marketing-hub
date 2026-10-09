@@ -33,6 +33,7 @@ import {
   setTodoDone,
   type TodoInput,
 } from '@/app/(app)/todos/actions'
+import { AlignLeft, ExternalLink, GripVertical, LayoutGrid, List } from 'lucide-react'
 import { agoLabel, dueState, formatDate } from '@/lib/dates'
 import type { TodoItem, TodoSection } from '@/lib/todos'
 
@@ -75,22 +76,9 @@ function build(sections: TodoSection[], items: TodoItem[]): Data {
 }
 
 
-const Grip = () => (
-  <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="currentColor">
-    <circle cx="9" cy="6" r="1.6" />
-    <circle cx="15" cy="6" r="1.6" />
-    <circle cx="9" cy="12" r="1.6" />
-    <circle cx="15" cy="12" r="1.6" />
-    <circle cx="9" cy="18" r="1.6" />
-    <circle cx="15" cy="18" r="1.6" />
-  </svg>
-)
+const Grip = () => <GripVertical aria-hidden className="size-4" />
 
-const NotesIcon = () => (
-  <svg aria-label="Has notes" role="img" viewBox="0 0 24 24" className="size-4 shrink-0 text-grey" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-    <path d="M5 6h14M5 12h14M5 18h9" />
-  </svg>
-)
+const NotesIcon = () => <AlignLeft aria-label="Has notes" role="img" className="size-4 shrink-0 text-grey" />
 
 // Basecamp's little progress circle: empty, part-filled or filled with a tick
 function Progress({ done, total }: { done: number; total: number }) {
@@ -283,7 +271,7 @@ function RowBody({
       {row.notes && <NotesIcon />}
       {row.link && (
         <a href={row.link} target="_blank" rel="noreferrer" className="shrink-0 text-xs font-bold text-blue">
-          Slides ↗
+          Slides <ExternalLink aria-hidden className="ml-0.5 inline size-3" />
         </a>
       )}
       {who && <Assignee name={who.full_name} />}
@@ -433,7 +421,9 @@ function ListBlock({
               onDelete={() => actions.remove(row.id)}
             />
           ))}
-          {open.length === 0 && dragging && <p className="px-2 py-3 text-center text-sm text-grey">Drop it here</p>}
+          {open.length === 0 && (
+            <p className="px-2 py-3 text-center text-sm text-grey">{dragging ? 'Drop it here' : done.length > 0 ? 'Everything here is done.' : 'Nothing here yet.'}</p>
+          )}
         </div>
       </SortableContext>
 
@@ -747,7 +737,7 @@ export function TodoBoard({
             onClick={() => pickView('list')}
             className={`px-3 py-2 ${view === 'list' ? 'bg-blue text-white' : 'bg-white text-grey'}`}
           >
-            <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+            <List aria-hidden className="size-4" />
           </button>
           <button
             type="button"
@@ -756,7 +746,7 @@ export function TodoBoard({
             onClick={() => pickView('grid')}
             className={`px-3 py-2 ${view === 'grid' ? 'bg-blue text-white' : 'bg-white text-grey'}`}
           >
-            <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="8" rx="1.5" /><rect x="3" y="13" width="8" height="8" rx="1.5" /><rect x="13" y="13" width="8" height="8" rx="1.5" /></svg>
+            <LayoutGrid aria-hidden className="size-4" />
           </button>
         </div>
       </div>

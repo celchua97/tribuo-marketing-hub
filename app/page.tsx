@@ -6,24 +6,32 @@ import { getAdminEmail } from '@/lib/admin-auth'
 import { loadOverview } from '@/lib/overview'
 import { agoLabel, formatDate } from '@/lib/dates'
 import { STATUS_LABEL } from '@/lib/labels'
+import { ArrowDown, ArrowUp, CheckCircle2, ChevronRight, ClipboardCheck, ListTodo, TriangleAlert } from 'lucide-react'
 import { BarChart, Donut, LineChart, PALETTE } from '@/components/dashboard/charts'
 import { AdminButton } from '@/components/admin-button'
 import { PageBand, TopBar } from '@/components/top-bar'
 
 export const dynamic = 'force-dynamic'
 
-function Delta({ text, tone }: { text: string; tone: 'good' | 'bad' | 'flat' }) {
-  const cls = { good: 'bg-[#e1ecf7] text-blue', bad: 'bg-coral/40 text-ink', flat: 'bg-sand text-grey' }[tone]
-  return <span className={`inline-block rounded-md px-2 py-0.5 text-[11px] font-bold ${cls}`}>{text}</span>
-}
+type Stat = { href: string; label: string; value: number; note: React.ReactNode; icon: React.ReactNode; alert?: boolean }
 
-function Kpi({ href, label, value, delta }: { href: string; label: string; value: number; delta: React.ReactNode }) {
+// One strip, four plain figures. No tile per number.
+function StatStrip({ stats }: { stats: Stat[] }) {
   return (
-    <Link href={href} className="block rounded-[20px] bg-white p-5 transition hover:shadow-[0_2px_14px_rgba(55,80,171,0.10)] active:scale-[0.99]">
-      <p className="text-sm text-grey">{label}</p>
-      <p className="title mt-1 text-4xl leading-tight">{value}</p>
-      <div className="mt-2">{delta}</div>
-    </Link>
+    <ul className="grid grid-cols-2 divide-beige rounded-[20px] bg-white lg:grid-cols-4 lg:divide-x [&>li:nth-child(n+3)]:border-t [&>li:nth-child(n+3)]:border-beige lg:[&>li:nth-child(n+3)]:border-t-0">
+      {stats.map((s) => (
+        <li key={s.label}>
+          <Link href={s.href} className="group flex h-full flex-col gap-1 rounded-[20px] px-5 py-4 transition-colors hover:bg-canvas/60">
+            <span className="flex items-center gap-2 text-sm text-grey">
+              <span className={s.alert ? 'text-[#c2410c]' : 'text-blue'}>{s.icon}</span>
+              {s.label}
+            </span>
+            <span className="tabular text-3xl leading-tight font-extrabold">{s.value}</span>
+            <span className="text-xs text-grey">{s.note}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -103,12 +111,25 @@ export default async function HubHome() {
         {o && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-5">
-              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-                <Kpi href="/todos" label="Open to-dos" value={o.todo.open} delta={<Delta text={`${o.trend.addedThisWeek} added this week`} tone="flat" />} />
-                <Kpi href="/todos" label="Overdue to-dos" value={o.todo.overdue.length} delta={<Delta text={o.todo.overdue.length ? 'Needs a nudge' : 'All on time'} tone={o.todo.overdue.length ? 'bad' : 'good'} />} />
-                <Kpi href="/todos" label="Done this week" value={o.trend.doneThisWeek} delta={<Delta text={`${doneDelta >= 0 ? '▲' : '▼'} ${Math.abs(doneDelta)} vs last week`} tone={doneDelta >= 0 ? 'good' : 'bad'} />} />
-                <Kpi href="/board" label="Videos to approve" value={o.videos.approvals} delta={<Delta text={o.videos.unscheduled ? `${o.videos.unscheduled} not scheduled` : 'Nothing stuck'} tone={o.videos.unscheduled ? 'bad' : 'flat'} />} />
-              </div>
+              <StatStrip
+                stats={[
+                  { href: '/todos', label: 'Open to-dos', value: o.todo.open, icon: <ListTodo className="size-4" aria-hidden />, note: `${o.trend.addedThisWeek} added this week` },
+                  { href: '/todos', label: 'Overdue', value: o.todo.overdue.length, icon: <TriangleAlert className="size-4" aria-hidden />, alert: o.todo.overdue.length > 0, note: o.todo.overdue.length ? 'Worth a nudge' : 'All on time' },
+                  {
+                    href: '/todos',
+                    label: 'Done this week',
+                    value: o.trend.doneThisWeek,
+                    icon: <CheckCircle2 className="size-4" aria-hidden />,
+                    note: (
+                      <span className="inline-flex items-center gap-1">
+                        {doneDelta >= 0 ? <ArrowUp className="size-3" aria-hidden /> : <ArrowDown className="size-3" aria-hidden />}
+                        {Math.abs(doneDelta)} vs last week
+                      </span>
+                    ),
+                  },
+                  { href: '/board', label: 'Videos to approve', value: o.videos.approvals, icon: <ClipboardCheck className="size-4" aria-hidden />, note: o.videos.unscheduled ? `${o.videos.unscheduled} not scheduled` : 'Nothing stuck' },
+                ]}
+              />
 
               <div className="grid gap-5 md:grid-cols-2">
                 <Panel title="To-dos done, last 7 days">
@@ -129,6 +150,9 @@ export default async function HubHome() {
 
               <div className="grid gap-5 md:grid-cols-2">
                 <Panel title="Content pipeline">
+                  {o.videos.stages.every((s) => s.count === 0) && o.videos.posted === 0 ? (
+                    <p className="py-10 text-center text-grey">No videos on the board yet. They appear here once they are added.</p>
+                  ) : (
                   <BarChart
                     label="Videos at each stage"
                     base="#3750ab"
@@ -137,6 +161,7 @@ export default async function HubHome() {
                       { label: 'Posted', value: o.videos.posted },
                     ]}
                   />
+                  )}
                 </Panel>
                 <Panel title="Open to-dos by person">
                   {donutSlices.length === 0 ? (
@@ -244,12 +269,12 @@ export default async function HubHome() {
 
               <Panel title="Jump to">
                 <ul className="space-y-1 text-sm font-bold">
-                  <li><Link href="/todos" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">To-dos <span className="text-grey">›</span></Link></li>
-                  <li><Link href="/ideas" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Idea Bank <span className="text-grey">{ideaPerson ? `${mine?.count ?? 0} from you` : '›'}</span></Link></li>
+                  <li><Link href="/todos" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">To-dos <ChevronRight className="size-4 text-grey" aria-hidden /></Link></li>
+                  <li><Link href="/ideas" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Idea Bank <span className="text-grey">{ideaPerson ? `${mine?.count ?? 0} from you` : <ChevronRight className="size-4" aria-hidden />}</span></Link></li>
                   {adminEmail ? (
                     <li><Link href="/admin" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Admin <span className="text-grey">{newIdeas?.count ?? 0} new idea{newIdeas?.count === 1 ? '' : 's'}</span></Link></li>
                   ) : showAdmin ? (
-                    <li><Link href="/login" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Admin sign in <span className="text-grey">›</span></Link></li>
+                    <li><Link href="/login" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Admin sign in <ChevronRight className="size-4 text-grey" aria-hidden /></Link></li>
                   ) : null}
                 </ul>
               </Panel>
