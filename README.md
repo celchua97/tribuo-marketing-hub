@@ -25,9 +25,9 @@ The site is one app with a menu that slides in from the left: swipe right (start
 
 Pages: `/` Hub home, `/board` your list, `/shoot-days`, `/videos`, `/ideas`, `/admin`, `/settings`. The "tribuo." logo is `public/tribuo-logo.svg` (Tribuo blue).
 
-## To-do board
+## To-dos
 
-`/todos` is a Basecamp-style board. It starts with three sections (Tribuo Marketing, Videography, Content Strategy). Anyone on the team can add a to-do under a section, tick it off (it moves to Completed and shows who ticked it), edit its title, delete it, and **drag** it to reorder or into any other section, with a mouse or a finger. Only the Head of Marketing can add, rename or delete sections. The Slides import can send its titles here: pick a section, or create a new one on the spot. Titles already in that section are skipped.
+`/todos` follows Basecamp's layout in Tribuo colours: a big "To-dos" title, a toolbar (**+ New list**, **Filter…**, and a list or grid view toggle that your browser remembers), then flat lists. Each list has a progress circle (empty, part-filled, or ticked when everything is done), a bold name and a grey description. Each to-do has a checkbox, its title, a notes icon, who it is for (initials and "First L."), and a due date (cream, yellow for today, salmon when overdue). Click **Add a to-do** to open the inline form: title, notes, Assign to, Due on. Click a title to edit it or delete it. Ticked to-dos fold into "N completed", which shows who ticked them. Drag to-dos with the handle to reorder, or into another list, with a mouse or a finger. The filter looks at titles, notes and names. Only the Head of Marketing can add, edit or delete lists. It starts with Tribuo Marketing, Videography and Content Strategy. The Slides import can send its titles here, into a list or a new one; titles already in the list are skipped.
 
 ## Adding videos from Google Slides
 
@@ -104,6 +104,7 @@ To add a person later (for example, a Cambodia videographer), have them add them
    5. `supabase/migrations/0004_no_briefs.sql`
    6. `supabase/migrations/0005_idea_bank.sql`
    7. `supabase/migrations/0006_todos.sql`
+   8. `supabase/migrations/0007_todos_basecamp.sql`
 3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
 ### 2. Vercel

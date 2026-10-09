@@ -11,14 +11,20 @@ export default async function TodosPage() {
   const { supabase, me } = await requireMe()
   const { sections, items } = await loadTodos(supabase)
   const isLead = me.role === 'lead'
+  const { data: people } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .eq('active', true)
+    .order('full_name')
+    .returns<{ id: string; full_name: string }[]>()
   return (
     <>
       <PageBand
-        title="To-do board"
-        intro="To-dos by section. Tick them off, and drag them wherever they belong."
+        title="To-dos"
+        intro="Lists of what needs doing. Tick them off, and drag them wherever they belong."
         nav={false}
       />
-      <main className="mx-auto max-w-[760px] space-y-4 px-4 py-6">
+      <main className="mx-auto max-w-[980px] space-y-4 px-4 py-6">
         {isLead && (
           <details className="card">
             <summary className="label-caps cursor-pointer text-xs text-grey">Add to-dos from Google Slides</summary>
@@ -27,7 +33,7 @@ export default async function TodosPage() {
             </div>
           </details>
         )}
-        <TodoBoard sections={sections} items={items} isLead={isLead} />
+        <TodoBoard sections={sections} items={items} people={people ?? []} timeZone={me.timezone} isLead={isLead} />
       </main>
     </>
   )

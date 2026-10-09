@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export type TodoSection = { id: string; name: string; sort_order: number }
+export type TodoSection = { id: string; name: string; description: string | null; sort_order: number }
 export type TodoItem = {
   id: string
   section_id: string
@@ -8,6 +8,9 @@ export type TodoItem = {
   position: number
   done: boolean
   done_at: string | null
+  notes: string | null
+  assignee_id: string | null
+  due_on: string | null
   source_link: string | null
   created_by: string | null
   done_by_profile: { full_name: string } | null

@@ -14,16 +14,25 @@ function done(error?: { message: string } | null): Result {
 }
 
 // ---- Sections (Head of Marketing)
-export async function addSection(name: string): Promise<Result & { id?: string }> {
+export async function addSection(name: string, description = ''): Promise<Result & { id?: string }> {
   const { supabase, me } = await requireLead()
-  const { data, error } = await supabase.rpc('todo_add_section', { p_actor: me.id, p_name: name })
+  const { data, error } = await supabase.rpc('todo_add_section', {
+    p_actor: me.id,
+    p_name: name,
+    p_description: description,
+  })
   const r = done(error)
   return r ?? { id: data as string }
 }
 
-export async function renameSection(id: string, name: string): Promise<Result> {
+export async function editSection(id: string, name: string, description: string): Promise<Result> {
   const { supabase, me } = await requireLead()
-  const { error } = await supabase.rpc('todo_rename_section', { p_actor: me.id, p_id: id, p_name: name })
+  const { error } = await supabase.rpc('todo_edit_section', {
+    p_actor: me.id,
+    p_id: id,
+    p_name: name,
+    p_description: description,
+  })
   return done(error)
 }
 
@@ -34,13 +43,17 @@ export async function deleteSection(id: string): Promise<Result> {
 }
 
 // ---- To-dos (anyone on the team)
-export async function addTodos(sectionId: string, titles: string[]): Promise<Result> {
+export type TodoInput = { title: string; notes: string; assigneeId: string | null; dueOn: string | null }
+
+export async function addTodo(sectionId: string, input: TodoInput): Promise<Result> {
   const { supabase, me } = await requireMe()
-  const { error } = await supabase.rpc('todo_add_items', {
+  const { error } = await supabase.rpc('todo_add_item', {
     p_actor: me.id,
     p_section: sectionId,
-    p_titles: titles,
-    p_link: null,
+    p_title: input.title,
+    p_notes: input.notes,
+    p_assignee: input.assigneeId,
+    p_due: input.dueOn || null,
   })
   return done(error)
 }
@@ -51,9 +64,16 @@ export async function setTodoDone(id: string, isDone: boolean): Promise<Result> 
   return done(error)
 }
 
-export async function editTodo(id: string, title: string): Promise<Result> {
+export async function editTodo(id: string, input: TodoInput): Promise<Result> {
   const { supabase, me } = await requireMe()
-  const { error } = await supabase.rpc('todo_edit_item', { p_actor: me.id, p_id: id, p_title: title })
+  const { error } = await supabase.rpc('todo_edit_item', {
+    p_actor: me.id,
+    p_id: id,
+    p_title: input.title,
+    p_notes: input.notes,
+    p_assignee: input.assigneeId,
+    p_due: input.dueOn || null,
+  })
   return done(error)
 }
 
