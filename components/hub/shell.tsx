@@ -29,9 +29,9 @@ export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: stri
 
   return (
     <div className="has-sidebar pb-20 lg:pb-0 lg:pl-60">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-blue px-4 py-6 text-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-beige bg-sand px-4 py-6 text-ink lg:flex">
         <Link href="/" aria-label="Hub home" className="mb-8 px-2">
-          <Logo className="h-8 w-auto brightness-0 invert" />
+          <Logo className="h-8 w-auto" />
         </Link>
         <nav aria-label="Main" className="space-y-1.5">
           {items.map((i) => {
@@ -41,7 +41,7 @@ export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: stri
                 key={i.href}
                 href={i.href}
                 aria-current={on ? 'page' : undefined}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-bold transition-colors ${on ? 'bg-white text-blue' : 'text-white/85 hover:bg-white/15'}`}
+                className={`flex items-center gap-3 rounded-xl px-3.5 py-3 text-[15px] font-bold transition-colors ${on ? 'bg-blue text-white' : 'text-ink/80 hover:bg-white/70'}`}
               >
                 {i.icon}
                 {i.label}
@@ -50,9 +50,9 @@ export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: stri
           })}
         </nav>
         {who && (
-          <div className="mt-auto flex items-center justify-between gap-2 rounded-xl bg-white/10 px-3.5 py-3 text-sm">
+          <div className="mt-auto flex items-center justify-between gap-2 rounded-xl bg-white px-3.5 py-3 text-sm">
             <span className="min-w-0 truncate font-bold">{who}</span>
-            <Link href="/who" className="shrink-0 text-white/80 underline">
+            <Link href="/who" className="shrink-0 text-grey underline">
               Switch
             </Link>
           </div>
