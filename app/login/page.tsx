@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <PageBand title="Admin sign in" nav={false} intro="Only people with admin access can get in. We email you a code." />
       <main className="mx-auto max-w-md px-4 py-6">
         <div className="card">
-          <AdminLoginForm next={target} />
+          <AdminLoginForm next={target} passcodeEnabled={(process.env.ADMIN_PASSCODE ?? '').length >= 12} />
         </div>
       </main>
     </div>

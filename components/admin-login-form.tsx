@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { sendCode, verifyCode } from '@/app/login/actions'
+import { sendCode, signInWithPasscode, verifyCode } from '@/app/login/actions'
 
-export function AdminLoginForm({ next }: { next: string }) {
-  const [step, setStep] = useState<'email' | 'code'>('email')
+export function AdminLoginForm({ next, passcodeEnabled }: { next: string; passcodeEnabled: boolean }) {
+  const [step, setStep] = useState<'email' | 'code' | 'passcode'>('email')
+  const [pass, setPass] = useState('')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
@@ -28,6 +29,33 @@ export function AdminLoginForm({ next }: { next: string }) {
     // On success the server sends us to the next page; we only get here with an error.
     setBusy(false)
     if (res?.error) setError(res.error)
+  }
+
+  async function usePass(e: React.FormEvent) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    const res = await signInWithPasscode(email, pass, next)
+    setBusy(false)
+    if (res?.error) setError(res.error)
+  }
+
+  if (step === 'passcode') {
+    return (
+      <form onSubmit={usePass} className="space-y-4">
+        <div>
+          <label className="label" htmlFor="admin_email2">Your email</label>
+          <input id="admin_email2" type="email" autoComplete="email" className="field" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div>
+          <label className="label" htmlFor="admin_pass">Backup passcode</label>
+          <input id="admin_pass" type="password" autoComplete="current-password" className="field" value={pass} onChange={(e) => setPass(e.target.value)} required />
+        </div>
+        {error && <p role="alert" className="text-sm font-bold text-danger">{error}</p>}
+        <button className="btn-primary" disabled={busy}>{busy ? 'Checking…' : 'Sign in'}</button>
+        <button type="button" className="text-sm font-bold text-grey underline" onClick={() => { setStep('email'); setError('') }}>Back to the email code</button>
+      </form>
+    )
   }
 
   return step === 'email' ? (
@@ -54,6 +82,11 @@ export function AdminLoginForm({ next }: { next: string }) {
       <button className="btn-primary" disabled={busy}>
         {busy ? 'Sending…' : 'Email me a code'}
       </button>
+      {passcodeEnabled && (
+        <button type="button" className="text-sm font-bold text-grey underline" onClick={() => { setStep('passcode'); setError('') }}>
+          No email? Use the backup passcode
+        </button>
+      )}
     </form>
   ) : (
     <form onSubmit={check} className="space-y-4">

@@ -1,5 +1,6 @@
 'use server'
 
+import { timingSafeEqual } from 'node:crypto'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
@@ -24,16 +25,13 @@ const safeNext = (n: string) => (n.startsWith('/') && !n.startsWith('//') ? n : 
 export async function sendCode(rawEmail: string): Promise<{ error?: string }> {
   const email = normaliseEmail(rawEmail)
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'Type your email address.' }
-  // Same answer whether or not the email is on the list, so nobody can probe it.
-  if (await isAllowedAdmin(email)) {
-    const { error } = await auth().signInWithOtp({ email, options: { shouldCreateUser: true } })
-    if (error) {
-      return {
-        error: /rate|seconds|too many/i.test(error.message)
-          ? 'A code was just sent. Wait a minute, then try again.'
-          : 'The code could not be sent. Try again in a minute.',
-      }
-    }
+  if (!(await isAllowedAdmin(email))) {
+    return { error: 'That email is not on the admin list yet. Add it in Supabase (admin_emails) or in Vercel (ADMIN_EMAILS), then try again.' }
+  }
+  const { error } = await auth().signInWithOtp({ email, options: { shouldCreateUser: true } })
+  if (error) {
+    // Show what Supabase said, so a sending problem can be found quickly
+    return { error: `The email could not be sent. Supabase said: ${error.message}` }
   }
   return {}
 }
@@ -45,6 +43,20 @@ export async function verifyCode(rawEmail: string, code: string, next: string): 
   if (!(await isAllowedAdmin(email))) return { error: 'That code did not work. Ask for a new one.' }
   const { error } = await auth().verifyOtp({ email, token, type: 'email' })
   if (error) return { error: 'That code did not work. Ask for a new one.' }
+  ;(await cookies()).set(ADMIN_COOKIE, signAdminCookie(email), ADMIN_COOKIE_OPTIONS)
+  redirect(safeNext(next))
+}
+
+// Backup for when email is not working: a long passcode set in Vercel (ADMIN_PASSCODE),
+// plus an email that is on the admin list.
+export async function signInWithPasscode(rawEmail: string, pass: string, next: string): Promise<{ error?: string }> {
+  const expected = process.env.ADMIN_PASSCODE ?? ''
+  const email = normaliseEmail(rawEmail)
+  await new Promise((r) => setTimeout(r, 800)) // slows down guessing
+  const a = Buffer.from(pass)
+  const b = Buffer.from(expected)
+  const same = expected.length >= 12 && a.length === b.length && timingSafeEqual(a, b)
+  if (!same || !(await isAllowedAdmin(email))) return { error: 'The email or passcode is not right.' }
   ;(await cookies()).set(ADMIN_COOKIE, signAdminCookie(email), ADMIN_COOKIE_OPTIONS)
   redirect(safeNext(next))
 }

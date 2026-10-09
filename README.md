@@ -33,6 +33,8 @@ Setup, once:
 2. In Supabase open **Authentication > Emails** (Email Templates) and edit both **Confirm sign up** and **Magic Link** so the body contains `Your code is {{ .Token }}`. The code is what people type in.
 3. Supabase's built-in email sender is limited to a few emails an hour, which is plenty for admin sign-ins. For more, add your own SMTP provider under Authentication > Emails.
 
+If email codes do not arrive, set `ADMIN_PASSCODE` in Vercel (12 or more characters). The sign-in page then shows "No email? Use the backup passcode". The email must still be on the admin list. Sign-in errors from Supabase are shown on the page, which says why an email did not send.
+
 Everything else (the Hub, to-dos, the Idea Bank) stays open to anyone with the link and a name.
 
 ## The Hub
