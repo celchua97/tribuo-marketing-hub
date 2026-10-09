@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { getMe } from '@/lib/data'
+import { Shell } from '@/components/hub/shell'
 
 export const metadata: Metadata = {
   title: 'Tribuo Hub',
@@ -15,7 +17,8 @@ export const viewport: Viewport = {
   themeColor: '#3750ab',
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const { me } = await getMe()
   return (
     <html lang="en-GB">
       <head>
@@ -27,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        {children}
+        <Shell isAdmin={me?.role === 'lead'} who={me?.full_name}>
+          {children}
+        </Shell>
       </body>
     </html>
   )

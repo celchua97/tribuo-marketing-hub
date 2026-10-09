@@ -75,7 +75,6 @@ export default async function HubHome() {
       <TopBar
         label="Hub"
         width="max-w-[1180px]"
-        menu={{ isAdmin: showAdmin, who: me ? `${me.full_name}, ${ROLE_LABEL[me.role]}` : ideaPerson?.name }}
       >
         {showAdmin && <AdminButton />}
       </TopBar>

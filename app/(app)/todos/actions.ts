@@ -45,9 +45,9 @@ export async function deleteSection(id: string): Promise<Result> {
 // ---- To-dos (anyone on the team)
 export type TodoInput = { title: string; notes: string; assigneeId: string | null; dueOn: string | null }
 
-export async function addTodo(sectionId: string, input: TodoInput): Promise<Result> {
+export async function addTodo(sectionId: string, input: TodoInput): Promise<Result & { id?: string }> {
   const { supabase, me } = await requireMe()
-  const { error } = await supabase.rpc('todo_add_item', {
+  const { data, error } = await supabase.rpc('todo_add_item', {
     p_actor: me.id,
     p_section: sectionId,
     p_title: input.title,
@@ -55,7 +55,8 @@ export async function addTodo(sectionId: string, input: TodoInput): Promise<Resu
     p_assignee: input.assigneeId,
     p_due: input.dueOn || null,
   })
-  return done(error)
+  const r = done(error)
+  return r ?? { id: data as string }
 }
 
 export async function setTodoDone(id: string, isDone: boolean): Promise<Result> {

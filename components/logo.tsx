@@ -1,9 +1,9 @@
 import { LOGO_SRC } from '@/lib/brand'
 
-export function Logo() {
+export function Logo({ className = 'h-8 w-auto' }: { className?: string }) {
   if (LOGO_SRC) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={LOGO_SRC} alt="tribuo." className="h-8 w-auto" />
+    return <img src={LOGO_SRC} alt="tribuo." className={className} />
   }
   // Stand-in until the official logo file is added (see lib/brand.ts).
   return (

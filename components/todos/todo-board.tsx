@@ -292,8 +292,8 @@ function RowBody({
   )
 }
 
-function SortableRow(props: Omit<Parameters<typeof RowBody>[0], 'handle'> & { locked: boolean }) {
-  const { locked, ...rest } = props
+function SortableRow(props: Omit<Parameters<typeof RowBody>[0], 'handle'> & { locked: boolean; leaving: boolean }) {
+  const { locked, leaving, ...rest } = props
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: props.row.id,
     disabled: locked,
@@ -302,8 +302,10 @@ function SortableRow(props: Omit<Parameters<typeof RowBody>[0], 'handle'> & { lo
     <div
       ref={setNodeRef}
       data-todo={props.row.title}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.35 : 1 }}
+      className={`row-in grid transition-[grid-template-rows,opacity] duration-200 ease-out ${leaving ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr]'}`}
+      style={{ transform: CSS.Transform.toString(transform), transition: transition ?? undefined, opacity: isDragging ? 0.35 : undefined }}
     >
+      <div className="min-h-0 overflow-hidden">
       <RowBody
         {...rest}
         handle={
@@ -320,6 +322,7 @@ function SortableRow(props: Omit<Parameters<typeof RowBody>[0], 'handle'> & { lo
           </button>
         }
       />
+      </div>
     </div>
   )
 }
@@ -337,6 +340,7 @@ function ListBlock({
   progress,
   dragging,
   filtering,
+  leaving,
   onError,
   actions,
 }: {
@@ -349,6 +353,7 @@ function ListBlock({
   isLead: boolean
   dragging: boolean
   filtering: boolean
+  leaving: Set<string>
   onError: (m: string) => void
   actions: {
     tick: (id: string, isDone: boolean) => void
@@ -422,6 +427,7 @@ function ListBlock({
               people={people}
               timeZone={timeZone}
               locked={filtering}
+              leaving={leaving.has(row.id)}
               onTick={() => actions.tick(row.id, true)}
               onSave={(i) => actions.edit(row.id, i)}
               onDelete={() => actions.remove(row.id)}
@@ -504,6 +510,7 @@ export function TodoBoard({
 }) {
   const [data, setData] = useState<Data>(() => build(sections, items))
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [leaving, setLeaving] = useState<Set<string>>(() => new Set())
   const [error, setError] = useState('')
   const [filter, setFilter] = useState('')
   const [view, setView] = useState<'list' | 'grid'>('list')
@@ -615,7 +622,17 @@ export function TodoBoard({
   const actions = {
     tick: async (id: string, isDone: boolean) => {
       setError('')
-      // show it straight away; the server confirms a moment later
+      // let the row fold away smoothly, tell the server at the same time
+      const server = setTodoDone(id, isDone)
+      if (isDone) {
+        setLeaving((s) => new Set(s).add(id))
+        await new Promise((r) => setTimeout(r, 200))
+        setLeaving((s) => {
+          const n = new Set(s)
+          n.delete(id)
+          return n
+        })
+      }
       setData((d) => {
         const sec = isDone ? findSection(id, d) : Object.keys(d.done).find((k) => d.done[k].some((r) => r.id === id))
         if (!sec) return d
@@ -625,18 +642,29 @@ export function TodoBoard({
           ? { open: { ...d.open, [sec]: d.open[sec].filter((r) => r.id !== id) }, done: { ...d.done, [sec]: [{ ...row, doneBy: 'you', doneAt: new Date().toISOString() }, ...d.done[sec]] } }
           : { open: { ...d.open, [sec]: [...d.open[sec], row] }, done: { ...d.done, [sec]: d.done[sec].filter((r) => r.id !== id) } }
       })
-      const res = await setTodoDone(id, isDone)
+      const res = await server
       if (res?.error) fail(res.error)
     },
+    // Shows the to-do straight away; the real id swaps in when the server answers
     add: async (sectionId: string, input: TodoInput) => {
       setError('')
-      const res = await addTodo(sectionId, input)
-      return res?.error
+      const title = input.title.trim()
+      if (!title) return undefined
+      const temp = `new-${Math.random().toString(36).slice(2)}`
+      const row: Row = { id: temp, title, notes: input.notes.trim() || null, assigneeId: input.assigneeId, dueOn: input.dueOn, link: null, doneBy: null, doneAt: null }
+      setData((d) => ({ ...d, open: { ...d.open, [sectionId]: [...(d.open[sectionId] ?? []), row] } }))
+      addTodo(sectionId, input).then((res) => {
+        if (res?.error || !res?.id) {
+          setData((d) => ({ ...d, open: { ...d.open, [sectionId]: (d.open[sectionId] ?? []).filter((r) => r.id !== temp) } }))
+          setError(res?.error ?? 'Could not add that to-do. Try again.')
+          return
+        }
+        setData((d) => ({ ...d, open: { ...d.open, [sectionId]: (d.open[sectionId] ?? []).map((r) => (r.id === temp ? { ...r, id: res.id as string } : r)) } }))
+      })
+      return undefined
     },
     edit: async (id: string, input: TodoInput) => {
       setError('')
-      const res = await editTodo(id, input)
-      if (res?.error) return res.error
       setData((d) => ({
         ...d,
         open: Object.fromEntries(
@@ -650,6 +678,9 @@ export function TodoBoard({
           ]),
         ),
       }))
+      editTodo(id, input).then((res) => {
+        if (res?.error) fail(res.error)
+      })
       return undefined
     },
     remove: async (id: string) => {
@@ -791,6 +822,7 @@ export function TodoBoard({
               isLead={isLead}
               dragging={!!activeId}
               filtering={!!q}
+              leaving={leaving}
               onError={setError}
               actions={actions}
             />

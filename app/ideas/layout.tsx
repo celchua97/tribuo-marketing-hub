@@ -27,7 +27,7 @@ export default async function IdeasLayout({ children }: { children: React.ReactN
     ])
     return (
       <div className="min-h-dvh pb-16">
-        <TopBar label="Idea Bank" width={WIDTH} menu={{ isAdmin }}>
+        <TopBar label="Idea Bank" width={WIDTH}>
           {isAdmin && <AdminButton />}
         </TopBar>
         <PageBand title="Idea Bank" intro="Pop in your name and department once, and you're in. No password needed." nav={false} />
@@ -43,7 +43,6 @@ export default async function IdeasLayout({ children }: { children: React.ReactN
       <TopBar
         label="Idea Bank"
         width={WIDTH}
-        menu={{ isAdmin, who: `${person.name}${person.department ? `, ${person.department.name}` : ''}` }}
       >
         {person.department && <span className="tag tag-cream mr-1">{person.department.name}</span>}
         <span className="mr-1 font-bold text-ink">{person.name}</span>

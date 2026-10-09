@@ -108,3 +108,19 @@
 @utility tag-cream {
   @apply bg-sand text-ink;
 }
+
+/* To-do rows ease in; nothing pops */
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.row-in {
+  animation: row-in 0.18s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .row-in {
+    animation: none;
+  }
+}

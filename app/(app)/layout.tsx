@@ -10,7 +10,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { me } = await requireMe()
   return (
     <div className="min-h-dvh pb-16">
-      <TopBar menu={{ isAdmin: me.role === 'lead', who: `${me.full_name}, ${ROLE_LABEL[me.role]}` }}>
+      <TopBar>
         <span className={`size-3 shrink-0 rounded-full ${ROLE_COLOR[me.role].dot}`} />
         <span className="flex flex-col pr-1 leading-tight">
           <span className="whitespace-nowrap font-bold text-ink">{me.full_name}</span>
