@@ -256,14 +256,14 @@ function RowBody({
   }
 
   return (
-    <div className="group flex items-center gap-1.5 border-b border-beige py-2">
+    <div className="group flex min-h-11 items-center gap-1.5 border-b border-beige py-1.5">
       {handle}
       <input
         type="checkbox"
         aria-label={`Done: ${row.title}`}
         checked={false}
         onChange={onTick}
-        className="size-5 shrink-0 accent-[#3750ab]"
+        className="size-6 shrink-0 accent-[#3750ab] sm:size-5"
       />
       <button type="button" onClick={() => setEditing(true)} className="min-w-0 flex-1 px-1 py-1 text-left" title="Tap to edit">
         {row.title}
@@ -302,7 +302,7 @@ function SortableRow(props: Omit<Parameters<typeof RowBody>[0], 'handle'> & { lo
             ref={setActivatorNodeRef}
             aria-label={`Drag ${props.row.title}`}
             disabled={locked}
-            className="flex size-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-full text-grey/60 hover:bg-sand hover:text-grey active:cursor-grabbing disabled:opacity-30"
+            className="flex size-9 shrink-0 cursor-grab touch-none sm:size-7 items-center justify-center rounded-full text-grey/60 hover:bg-sand hover:text-grey active:cursor-grabbing disabled:opacity-30"
             {...attributes}
             {...listeners}
           >
@@ -440,7 +440,7 @@ function ListBlock({
             }}
           />
         ) : (
-          <button type="button" onClick={() => setAdding(true)} className="inline-flex items-center gap-2 text-sm font-bold text-blue underline">
+          <button type="button" onClick={() => setAdding(true)} className="inline-flex min-h-10 items-center gap-2 text-sm font-bold text-blue underline">
             <span aria-hidden className="size-4 rounded-[4px] border-2 border-blue" />
             Add a to-do
           </button>

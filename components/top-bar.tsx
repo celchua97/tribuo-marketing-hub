@@ -13,7 +13,7 @@ export function TopBar({
   width?: string
 }) {
   return (
-    <header className="bg-canvas">
+    <header className="bg-canvas in-[.has-sidebar]:lg:hidden">
       <div className={`mx-auto flex ${width} flex-wrap items-center justify-between gap-x-3 gap-y-1 px-4 py-3`}>
         <div className="flex items-center gap-3">
           <Link href="/" aria-label="Hub home" className="in-[.has-sidebar]:lg:hidden">

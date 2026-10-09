@@ -78,14 +78,14 @@ export default async function HubHome() {
   const attention = o ? o.todo.overdue : []
 
   return (
-    <div className="min-h-dvh bg-[#f1ede4] pb-16">
+    <div className="min-h-dvh pb-16">
       <TopBar
         label="Hub"
         width="max-w-[1180px]"
       >
         {showAdmin && <AdminButton />}
       </TopBar>
-      <main className="mx-auto max-w-[1180px] space-y-5 px-4 pt-2 pb-6">
+      <main className="mx-auto max-w-[1180px] space-y-5 px-4 pt-2 pb-6 sm:px-6 lg:px-8 lg:pt-8">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="title text-3xl sm:text-4xl">Dashboard</h1>
@@ -110,7 +110,7 @@ export default async function HubHome() {
 
         {o && (
           <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-5">
+            <div className="min-w-0 space-y-5">
               <StatStrip
                 stats={[
                   { href: '/todos', label: 'Open to-dos', value: o.todo.open, icon: <ListTodo className="size-4" aria-hidden />, note: `${o.trend.addedThisWeek} added this week` },
@@ -227,7 +227,7 @@ export default async function HubHome() {
               </Panel>
             </div>
 
-            <aside className="space-y-5">
+            <aside className="min-w-0 space-y-5">
               <Panel title="List progress" action={<Link href="/todos" className="text-xs font-bold text-blue">Open</Link>}>
                 {o.todo.lists.length === 0 ? (
                   <p className="text-grey">No lists yet.</p>
