@@ -31,14 +31,6 @@ export const DOC_TYPES = [
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 export const ACCEPT = [...IMAGE_TYPES, ...DOC_TYPES].join(',')
 
-export type IdeaDepartment = { id: string; name: string; sort_order: number; active: boolean }
-export type IdeaPerson = {
-  id: string
-  name: string
-  department_id: string | null
-  created_at: string
-  department: { name: string } | null
-}
 export type IdeaFile = {
   id: string
   path: string
@@ -50,14 +42,12 @@ export type IdeaFile = {
 }
 export type IdeaSubmission = {
   id: string
-  person_id: string
   kind: Kind
   area: string
   title: string
   details: string | null
   status: Status
   created_at: string
-  person: { name: string; department: { name: string } | null } | null
   files: IdeaFile[]
 }
 

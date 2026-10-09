@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { getMe } from '@/lib/data'
-import { getIdeaPerson } from '@/lib/ideas'
 import { db } from '@/lib/supabase/admin'
 import { getAdminEmail } from '@/lib/admin-auth'
 import { loadOverview } from '@/lib/overview'
@@ -55,15 +54,11 @@ const initials = (n: string) => n.trim().split(/\s+/).map((w) => w[0]).slice(0, 
 
 export default async function HubHome() {
   const { supabase, me } = await getMe()
-  const ideaPerson = await getIdeaPerson()
   const adminEmail = await getAdminEmail()
   const showAdmin = me?.role === 'lead'
 
-  const [overview, mine, newIdeas] = await Promise.all([
+  const [overview, newIdeas] = await Promise.all([
     me ? loadOverview(supabase, me) : null,
-    ideaPerson
-      ? supabase.from('idea_submissions').select('id', { count: 'exact', head: true }).eq('person_id', ideaPerson.id)
-      : null,
     adminEmail
       ? db().from('idea_submissions').select('id', { count: 'exact', head: true }).eq('status', 'new')
       : null,
@@ -272,7 +267,7 @@ export default async function HubHome() {
               <Panel title="Jump to">
                 <ul className="space-y-1 text-sm font-bold">
                   <li><Link href="/todos" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">To-dos <ChevronRight className="size-4 text-grey" aria-hidden /></Link></li>
-                  <li><Link href="/ideas" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Idea Bank <span className="text-grey">{ideaPerson ? `${mine?.count ?? 0} from you` : <ChevronRight className="size-4" aria-hidden />}</span></Link></li>
+                  <li><Link href="/ideas" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Idea Bank <span className="text-grey">{adminEmail ? `${newIdeas?.count ?? 0} new` : <ChevronRight className="size-4" aria-hidden />}</span></Link></li>
                   {adminEmail ? (
                     <li><Link href="/admin" className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-canvas">Admin <span className="text-grey">{newIdeas?.count ?? 0} new idea{newIdeas?.count === 1 ? '' : 's'}</span></Link></li>
                   ) : showAdmin ? (

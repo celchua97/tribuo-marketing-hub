@@ -1,41 +1,18 @@
-import { cache } from 'react'
-import { cookies } from 'next/headers'
 import { db } from './supabase/admin'
-import { IDEA_COOKIE } from './session'
-import { BUCKET, type IdeaDepartment, type IdeaPerson, type IdeaSubmission } from './ideas-shared'
+import { BUCKET, type IdeaSubmission } from './ideas-shared'
 
 export * from './ideas-shared'
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const SUBMISSION_SELECT = '*, files:idea_files(id, path, name, mime, size)'
 
-// The person remembered on this device (name and department), if any.
-export const getIdeaPerson = cache(async () => {
-  const id = (await cookies()).get(IDEA_COOKIE)?.value
-  if (!id || !UUID.test(id)) return null
-  const { data } = await db()
-    .from('idea_people')
-    .select('*, department:idea_departments(name)')
-    .eq('id', id)
-    .maybeSingle<IdeaPerson>()
-  return data
-})
-
-export async function loadDepartments(onlyActive = true) {
-  let q = db().from('idea_departments').select('*').order('sort_order')
-  if (onlyActive) q = q.eq('active', true)
-  const { data } = await q.returns<IdeaDepartment[]>()
-  return data ?? []
-}
-
-const SUBMISSION_SELECT =
-  '*, person:idea_people(name, department:idea_departments(name)), files:idea_files(id, path, name, mime, size)'
-
-// Entries with short-lived links for their files. Pass personId to see only one person's.
-export async function loadSubmissions(personId?: string): Promise<IdeaSubmission[]> {
+// Every entry, newest first, with short-lived links for their files.
+export async function loadSubmissions(): Promise<IdeaSubmission[]> {
   const supabase = db()
-  let q = supabase.from('idea_submissions').select(SUBMISSION_SELECT).order('created_at', { ascending: false })
-  if (personId) q = q.eq('person_id', personId)
-  const { data } = await q.returns<IdeaSubmission[]>()
+  const { data } = await supabase
+    .from('idea_submissions')
+    .select(SUBMISSION_SELECT)
+    .order('created_at', { ascending: false })
+    .returns<IdeaSubmission[]>()
   const items = data ?? []
 
   const paths = items.flatMap((i) => i.files.map((f) => f.path))

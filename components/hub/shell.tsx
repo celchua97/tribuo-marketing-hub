@@ -23,6 +23,8 @@ const ADMIN: Item = {
 export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: string; children: React.ReactNode }) {
   const path = usePathname()
   if (path.startsWith('/who') || path === '/login') return <>{children}</>
+  // The public Idea Bank link is for anyone, so it shows no team menu to people without a name
+  if (path.startsWith('/ideas') && !who) return <>{children}</>
   const items = isAdmin ? [...ITEMS, ADMIN] : ITEMS
 
   return (

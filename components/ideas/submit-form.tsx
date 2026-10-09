@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { prepareUploads, submitIdea } from '@/app/ideas/actions'
@@ -43,6 +42,7 @@ export function SubmitForm({ uploads }: { uploads: { url: string; key: string } 
   const [fileNote, setFileNote] = useState('')
   const [sent, setSent] = useState<Kind | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [website, setWebsite] = useState('')
   const input = useRef<HTMLInputElement>(null)
   const count = useRef(0)
 
@@ -92,9 +92,10 @@ export function SubmitForm({ uploads }: { uploads: { url: string; key: string } 
     setBusy(true)
     try {
       const sent_files: { path: string; name: string; mime: string; size: number }[] = []
+      let prep: Awaited<ReturnType<typeof prepareUploads>> | undefined
       if (files.length) {
         if (!uploads) return setError('Attachments aren’t switched on yet. Remove the files to send this without them.')
-        const prep = await prepareUploads(files.map((f) => ({ name: f.file.name, type: f.file.type, size: f.file.size })))
+        prep = await prepareUploads(files.map((f) => ({ name: f.file.name, type: f.file.type, size: f.file.size })))
         if (prep.error || !prep.uploads) return setError(prep.error ?? 'Something went wrong with the files. Try again.')
         const storage = createClient(uploads.url, uploads.key, { auth: { persistSession: false, autoRefreshToken: false } }).storage.from(BUCKET)
         for (let i = 0; i < files.length; i++) {
@@ -105,7 +106,7 @@ export function SubmitForm({ uploads }: { uploads: { url: string; key: string } 
           sent_files.push({ path, name: f.name, mime: f.type, size: f.size })
         }
       }
-      const res = await submitIdea({ kind, area, title, details, files: sent_files })
+      const res = await submitIdea({ kind, area, title, details, website, folder: prep?.folder, files: sent_files })
       if (res.error) return setError(res.error)
       files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview))
       setSent(kind)
@@ -125,21 +126,17 @@ export function SubmitForm({ uploads }: { uploads: { url: string; key: string } 
     return (
       <div className="card space-y-4 text-center">
         <p className="title text-2xl">Thanks! Your {sent === 'idea' ? 'idea' : 'feedback'} is in.</p>
-        <p className="text-grey">You can follow what happens to it under Your submissions.</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Link href="/ideas/mine" className="btn-primary">
-            See your submissions
-          </Link>
-          <button type="button" className="btn-ghost" onClick={() => setSent(null)}>
-            Add another
-          </button>
-        </div>
+        <p className="text-grey">We read everything.</p>
+        <button type="button" className="btn-primary" onClick={() => setSent(null)}>
+          Add another
+        </button>
       </div>
     )
   }
 
   return (
     <form onSubmit={onSubmit} className="card space-y-6">
+      <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="absolute -left-[9999px] size-px opacity-0" value={website} onChange={(e) => setWebsite(e.target.value)} />
       <div>
         <span className="label">What is it?</span>
         <div className="grid grid-cols-2 gap-3">

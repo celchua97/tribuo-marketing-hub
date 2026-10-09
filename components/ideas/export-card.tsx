@@ -5,8 +5,6 @@ import { useState } from 'react'
 export type ExportRow = {
   id: string
   created: string
-  name: string
-  department: string
   kind: string
   area: string
   status: string
@@ -15,7 +13,7 @@ export type ExportRow = {
   files: string[]
 }
 
-const PROMPT = `I'm the Head of Marketing at Tribuo, a semi-private training club with studios in Malaysia and Cambodia. Above are ideas and feedback from my team. Please:
+const PROMPT = `I'm the Head of Marketing at Tribuo, a semi-private training club with studios in Malaysia and Cambodia. Above are ideas and feedback from the team and the public. Please:
 1. Group them into themes.
 2. Pick the five strongest and say why.
 3. Point out anything that came up more than once.
@@ -28,9 +26,9 @@ function summary(rows: ExportRow[], note: string) {
   const body = rows.map((r, i) =>
     [
       `${i + 1}. [${r.kind.toUpperCase()}] ${r.title}`,
-      `   Area: ${r.area} | Department: ${r.department || 'none'} | Status: ${r.status}`,
+      `   Area: ${r.area} | Status: ${r.status}`,
       r.details ? `   ${r.details.replace(/\n/g, '\n   ')}` : '',
-      `   From: ${r.name}, ${r.created}`,
+      `   Sent: ${r.created}`,
       r.files.length ? `   Files: ${r.files.join(', ')}` : '',
     ]
       .filter(Boolean)
@@ -40,7 +38,7 @@ function summary(rows: ExportRow[], note: string) {
 }
 
 function csv(rows: ExportRow[]) {
-  const cols: (keyof ExportRow)[] = ['created', 'name', 'department', 'kind', 'area', 'status', 'title', 'details', 'files']
+  const cols: (keyof ExportRow)[] = ['created', 'kind', 'area', 'status', 'title', 'details', 'files']
   const cell = (v: unknown) => `"${String(Array.isArray(v) ? v.join('; ') : v ?? '').replace(/"/g, '""')}"`
   return '﻿' + [cols.join(','), ...rows.map((r) => cols.map((c) => cell(r[c])).join(','))].join('\r\n')
 }

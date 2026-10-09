@@ -54,13 +54,12 @@ On **New video**, paste a Google Slides link (set to "Anyone with the link can v
 
 ## Idea Bank
 
-A second tool on the same website, at `/ideas`. It has its own link you can share.
+A public form at `/ideas`, with its own link you can share with anyone.
 
-- **No sign-in.** People type their name and pick a department once. Their phone remembers them; "Switch" covers a new phone. The department list is editable in Admin.
-- **Two tabs:** Submit, and Your submissions. People only ever see their own entries.
+- **No names, no sign in.** Nobody types a name or picks a department. Entries are anonymous. A hidden box and a limit of 12 entries an hour from one address keep spam down.
 - **Submit:** Idea (yellow) or Feedback (salmon), an area, a few words, optional details, and up to 3 files (screenshots are shrunk in the browser; PDF, Word and PowerPoint up to 5 MB). Drag and drop, paste a screenshot, thumbnails, and a larger preview with a Download button.
-- **Admin** (the gear button, Head of Marketing only): **Ideas** has summary counts, filters by type, area, department and status, a status picker on each item (New, Shortlisted, Used, Archived), and the Export card (Copy for Claude, Save CSV, Save JSON). **People** lists everyone who has joined, with a department dropdown each, and the editable department list. **Board** opens the video board settings.
-- **Files** live in a private Supabase storage bucket, one folder per person, and are shown through short-lived links. Uploads go straight from the browser to storage.
+- **Admin** (Admin > Ideas, owner and admins only): the public link with a copy button, summary counts, filters by type, area and status, a status picker on each item (New, Shortlisted, Used, Archived), and the Export card (Copy for Claude, Save CSV, Save JSON).
+- **Files** live in a private Supabase storage bucket, one folder per entry, and are shown through short-lived links. Uploads go straight from the browser to storage.
 
 ## How it works
 
@@ -125,6 +124,7 @@ To add a person later (for example, a Cambodia videographer), have them add them
    7. `supabase/migrations/0006_todos.sql`
    8. `supabase/migrations/0007_todos_basecamp.sql`
    9. `supabase/migrations/0008_admin_access.sql`
+   10. `supabase/migrations/0009_idea_bank_public.sql`
 3. From **Project Settings > API Keys**, copy the **Project URL** and the **Secret key** (it starts with `sb_secret_`). If you only see the older "anon" and "service_role" keys, copy `service_role`. Treat it like a password: it goes in Vercel only, never in the code.
 
 ### 2. Vercel
