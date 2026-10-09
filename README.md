@@ -40,7 +40,7 @@ Everything else (the Hub, to-dos, the Idea Bank) stays open to anyone with the l
 
 ## Meta ads dashboard
 
-`/marketing` (admin only, in the sidebar) shows leads performance from the Meta Marketing API: leads, cost per lead, spend and link click rate with a comparison to the period before, leads per day, leads by campaign, and a table of every campaign. Pick 7, 14, 30 or 90 days. Numbers are fetched live from Meta, cached for 5 minutes, and **Refresh now** clears the cache.
+`/performance` (admin only, in the sidebar) shows leads performance from the Meta Marketing API: leads, cost per lead, spend and link click rate with a comparison to the period before, leads per day, leads by campaign, and a table of every campaign. Pick 7, 14, 30 or 90 days. Numbers are fetched live from Meta, cached for 5 minutes, and **Refresh now** clears the cache.
 
 A lead is a form lead (counted once even though Meta reports it under several names) plus WhatsApp or Messenger conversations started. Change what counts with `META_LEAD_ACTIONS` (comma separated Meta action types).
 

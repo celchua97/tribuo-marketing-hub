@@ -12,7 +12,7 @@ const ITEMS: Item[] = [
   { href: '/todos', label: 'To-dos', active: (p) => p.startsWith('/todos'), icon: <ListChecks className="size-5 shrink-0" aria-hidden /> },
   { href: '/ideas', label: 'Idea Bank', active: (p) => p.startsWith('/ideas'), icon: <Lightbulb className="size-5 shrink-0" aria-hidden /> },
 ]
-const MARKETING: Item = { href: '/marketing', label: 'Marketing', active: (p) => p.startsWith('/marketing'), icon: <BarChart3 className="size-5 shrink-0" aria-hidden /> }
+const PERFORMANCE: Item = { href: '/performance', label: 'Performance', active: (p) => p.startsWith('/performance'), icon: <BarChart3 className="size-5 shrink-0" aria-hidden /> }
 const ADMIN: Item = {
   href: '/admin',
   label: 'Admin',
@@ -26,7 +26,7 @@ export function Shell({ isAdmin, who, children }: { isAdmin: boolean; who?: stri
   if (path.startsWith('/who') || path === '/login') return <>{children}</>
   // The public Idea Bank link is for anyone, so it shows no team menu to people without a name
   if (path.startsWith('/ideas') && !who) return <>{children}</>
-  const items = isAdmin ? [...ITEMS, MARKETING, ADMIN] : ITEMS
+  const items = isAdmin ? [...ITEMS, PERFORMANCE, ADMIN] : ITEMS
 
   return (
     <div className="has-sidebar pb-20 lg:pb-0 lg:pl-60">

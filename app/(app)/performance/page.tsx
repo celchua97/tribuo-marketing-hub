@@ -52,15 +52,15 @@ function Stat({ icon, label, value, delta }: { icon: React.ReactNode; label: str
   )
 }
 
-export default async function MarketingPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
-  const { me } = await requireLead('/marketing')
+export default async function PerformancePage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
+  const { me } = await requireLead('/performance')
   const { range = '30' } = await searchParams
   const report = await loadMeta(range, me.timezone)
   const active = RANGES.find((r) => r.key === range)?.key ?? '30'
 
   return (
     <>
-      <PageBand title="Marketing" nav={false} intro="Leads and spend from Meta ads, straight from the ad account." />
+      <PageBand title="Performance" nav={false} intro="Leads and spend from Meta ads, straight from the ad account." />
       <main className="mx-auto max-w-[1180px] space-y-5 px-4 py-6 sm:px-6 lg:px-8">
         {!report.ok && report.error === 'not_configured' && <Setup />}
         {!report.ok && report.error !== 'not_configured' && (
@@ -103,7 +103,7 @@ function Report({ report, active }: { report: Extract<Awaited<ReturnType<typeof 
             {RANGES.map((r) => (
               <Link
                 key={r.key}
-                href={`/marketing?range=${r.key}`}
+                href={`/performance?range=${r.key}`}
                 aria-current={active === r.key ? 'page' : undefined}
                 className={`px-3.5 py-2 text-sm font-bold ${active === r.key ? 'bg-blue text-white' : 'text-grey hover:bg-canvas'}`}
               >
